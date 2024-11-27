@@ -1,0 +1,5 @@
+生成密钥和请求文件：
+	gmssl genrsa  -out server.key 2048
+	gmssl req -new -key server.key -out server.csr
+签发：
+	gmssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key -config openssl.cnf

@@ -1,0 +1,150 @@
+systemctl set-default multi-user.target
+systemctl set-default graphical.target
+
+
+/usr/bin/X :0 -background none -noreset -audit 4 
+-verbose -auth /run/gdm/auth-for-gdm-hICgt1/database -seat seat0 vt1
+
+
+
+[root@localhost system]# systemctl list-dependencies
+default.target
+● ├─accounts-daemon.service
+● ├─gdm.service
+● ├─initial-setup-reconfiguration.service
+● ├─network.service
+● ├─rtkit-daemon.service
+● ├─systemd-readahead-collect.service
+● ├─systemd-readahead-replay.service
+● ├─systemd-update-utmp-runlevel.service
+● ├─udisks2.service
+● └─multi-user.target
+●   ├─abrt-ccpp.service
+●   ├─abrt-oops.service
+●   ├─abrt-vmcore.service
+●   ├─abrt-xorg.service
+●   ├─abrtd.service
+●   ├─atd.service
+●   ├─auditd.service
+●   ├─avahi-daemon.service
+●   ├─crond.service
+●   ├─cups.path
+●   ├─cups.service
+●   ├─dbus.service
+●   ├─initial-setup-reconfiguration.service
+●   ├─irqbalance.service
+●   ├─kdump.service
+●   ├─ksm.service
+●   ├─ksmtuned.service
+●   ├─libstoragemgmt.service
+●   ├─libvirtd.service
+●   ├─mcelog.service
+●   ├─mdmonitor.service
+●   ├─ModemManager.service
+●   ├─network.service
+●   ├─NetworkManager.service
+●   ├─plymouth-quit-wait.service
+●   ├─plymouth-quit.service
+●   ├─postfix.service
+●   ├─rhel-configure.service
+●   ├─rngd.service
+●   ├─rpcbind.service
+●   ├─rsyslog.service
+●   ├─smartd.service
+●   ├─sshd.service
+●   ├─sysstat.service
+●   ├─systemd-ask-password-wall.path
+●   ├─systemd-logind.service
+●   ├─systemd-update-utmp-runlevel.service
+●   ├─systemd-user-sessions.service
+●   ├─tuned.service
+●   ├─vmtoolsd.service
+●   ├─basic.target
+●   │ ├─microcode.service
+●   │ ├─rhel-dmesg.service
+●   │ ├─selinux-policy-migrate-local-changes@targeted.service
+●   │ ├─paths.target
+●   │ ├─slices.target
+●   │ │ ├─-.slice
+●   │ │ └─system.slice
+●   │ ├─sockets.target
+●   │ │ ├─avahi-daemon.socket
+●   │ │ ├─cups.socket
+●   │ │ ├─dbus.socket
+●   │ │ ├─dm-event.socket
+●   │ │ ├─iscsid.socket
+●   │ │ ├─iscsiuio.socket
+●   │ │ ├─pcscd.socket
+●   │ │ ├─rpcbind.socket
+●   │ │ ├─spice-vdagentd.socket
+●   │ │ ├─systemd-initctl.socket
+●   │ │ ├─systemd-journald.socket
+●   │ │ ├─systemd-shutdownd.socket
+●   │ │ ├─systemd-udevd-control.socket
+●   │ │ ├─systemd-udevd-kernel.socket
+●   │ │ ├─virtlockd.socket
+●   │ │ └─virtlogd.socket
+●   │ ├─sysinit.target
+●   │ │ ├─dev-hugepages.mount
+●   │ │ ├─dev-mqueue.mount
+●   │ │ ├─dmraid-activation.service
+●   │ │ ├─iscsi.service
+●   │ │ ├─kmod-static-nodes.service
+●   │ │ ├─lvm2-lvmetad.socket
+●   │ │ ├─lvm2-lvmpolld.socket
+●   │ │ ├─lvm2-monitor.service
+●   │ │ ├─multipathd.service
+●   │ │ ├─plymouth-read-write.service
+●   │ │ ├─plymouth-start.service
+●   │ │ ├─proc-sys-fs-binfmt_misc.automount
+●   │ │ ├─rhel-autorelabel.service
+●   │ │ ├─rhel-domainname.service
+●   │ │ ├─rhel-import-state.service
+●   │ │ ├─rhel-loadmodules.service
+●   │ │ ├─sys-fs-fuse-connections.mount
+●   │ │ ├─sys-kernel-config.mount
+●   │ │ ├─sys-kernel-debug.mount
+●   │ │ ├─systemd-ask-password-console.path
+●   │ │ ├─systemd-binfmt.service
+●   │ │ ├─systemd-firstboot.service
+●   │ │ ├─systemd-hwdb-update.service
+●   │ │ ├─systemd-journal-catalog-update.service
+●   │ │ ├─systemd-journal-flush.service
+●   │ │ ├─systemd-journald.service
+●   │ │ ├─systemd-machine-id-commit.service
+●   │ │ ├─systemd-modules-load.service
+●   │ │ ├─systemd-random-seed.service
+●   │ │ ├─systemd-sysctl.service
+●   │ │ ├─systemd-tmpfiles-setup-dev.service
+●   │ │ ├─systemd-tmpfiles-setup.service
+●   │ │ ├─systemd-udev-trigger.service
+●   │ │ ├─systemd-udevd.service
+●   │ │ ├─systemd-update-done.service
+●   │ │ ├─systemd-update-utmp.service
+●   │ │ ├─systemd-vconsole-setup.service
+●   │ │ ├─cryptsetup.target
+●   │ │ ├─local-fs.target
+●   │ │ │ ├─-.mount
+●   │ │ │ ├─boot.mount
+●   │ │ │ ├─home.mount
+●   │ │ │ ├─rhel-readonly.service
+●   │ │ │ └─systemd-remount-fs.service
+●   │ │ └─swap.target
+●   │ │   └─dev-mapper-centos\x2dswap.swap
+●   │ └─timers.target
+●   │   ├─systemd-tmpfiles-clean.timer
+●   │   └─unbound-anchor.timer
+●   ├─getty.target
+●   │ └─getty@tty1.service
+●   ├─nfs-client.target
+●   │ ├─auth-rpcgss-module.service
+●   │ ├─rpc-statd-notify.service
+●   │ └─remote-fs-pre.target
+●   └─remote-fs.target
+●     └─nfs-client.target
+●       ├─auth-rpcgss-module.service
+●       ├─rpc-statd-notify.service
+●       └─remote-fs-pre.target
+
+
+

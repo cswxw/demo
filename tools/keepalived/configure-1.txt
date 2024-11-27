@@ -1,0 +1,62 @@
+ 
+主机配置：
+ vrrp_instance VI_1 {
+    #指定该节点为主节点，备用节点设置为BACKUP
+    state MASTER
+ 
+    #绑定虚拟IP的网络接口
+    interface eno16777736
+ 
+    #VRRP组名，两个节点设置一样，以指明各个节点同属一VRRP组
+    virtual_router_id 51
+ 
+    #主节点的优先级，数值在1~254，注意从节点必须比主节点的优先级别低
+    priority 50
+ 
+    ##组播信息发送间隔，两个节点需一致
+    advert_int 1
+ 
+    #设置验证信息，两个节点需一致
+    authentication{
+      auth_type PASS
+      auth_pass 1111
+    }
+ 
+    #指定虚拟IP，两个节点需设置一样
+    virtual_ipaddress{
+      10.0.0.100
+    }
+ }
+#虚拟IP服务
+virtual_server 10.0.0.100 80 {
+    #设定检查间隔
+    delay_loop 6
+ 
+   #指定LVS算法
+    lb_algo rr
+ 
+   #指定LVS模式
+    lb_kind NAT
+    nat_mask 255.255.255.0
+ 
+   #持久连接设置，会话保持时间
+   persistence_timeout 50
+ 
+   #转发协议为TCP
+   protocol TCP
+ 
+  #后端实际TCP服务配置
+  real_server 10.0.0.22 80 {
+     weight 1
+  }
+ 
+  real_server 10.0.0.23 80 {
+     weight 1
+  }
+}
+
+备机
+state BACKUP
+priority 30
+ 
+#其它配置跟keepalived主机相同

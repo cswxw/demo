@@ -1,0 +1,41 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style-new.css" />
+<!-- mock.js is only required for local testing -->
+<script type="text/javascript" src="mock.js"></script> 
+<script type="text/javascript" src="script.js"></script>
+</head>
+
+<body onload="initialize()" oncontextmenu="return false;" onkeypress=handle_key_press() >
+  <div class="header"><span id="current_time" class="time"></span></div>
+  <div class="login_content">
+    <div class="login_container">
+      <div class="center">
+        <div id="user_template" class="user hidden smooth button" tabindex="0">
+          <div class="user_image_wrapper"> <img class="user_image" src="" draggable="false"/> </div>
+          <span class="user_name"></span>
+        </div>
+      </div>
+      <div id="other_users_login" class="center hidden smooth">
+            <input  type="text" placeholder="Username" name="entryUser" id="entryUser" onchange=handle_input() />
+      </div>
+      <div id="password_container" class="center hidden smooth">
+        <form action="javascript: provide_secret()" class="password_prompt">
+          <input id="password_entry" type="password" placeholder="Password" oninput=password_input() onkeyup=setTimeout(update_caps_lock_indicator,100) />
+	      <img id="submit_img" class="submit_hidden" src="img/arrow.png" onclick=submit() />
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="message" class="smooth">
+    <div id="message_content"></div>
+  </div>
+  <div class="footer">
+      <div id="action_template" class="action button">
+        <div class="action_image_wrapper"><img class="action_image" src=""/></div>
+        <span class="action_label"></span>
+      </div>
+  </div>
+</body>
+</html>

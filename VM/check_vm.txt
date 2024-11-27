@@ -1,0 +1,23 @@
+程序禁止在 VMware 虚拟机中运行的解决办法
+	打开注册表
+	regedit
+
+	Look for-
+	HKEY_LOCAL_MACHINE/SYSTEM/CurrentControlSet/Control/Class/{4D36E968-E325-11CE-BFC1-08002BE10318}/0000
+	里面的名称改成 实体机显卡的名称
+	==========================
+	DriverDesk - ATI/NVIDIA SVGA II
+	==========================
+	虚拟机配置文件   Windows 7.vmx 中加入以下代码
+	====================================
+	svga.vramSize = 268435456
+	monitor_control.restrict_backdoor = "true"
+	isolation.tools.getPtrLocation.disable = "true"
+	isolation.tools.setPtrLocation.disable = "true"
+	isolation.tools.setVersion.disable = "true"
+	isolation.tools.getVersion.disable = "true"
+	monitor_control.disable_directexec = "true"
+	SMBIOS.reflectHost = "TRUE"
+	====================================
+
+

@@ -1,0 +1,57 @@
+
+yum 安装
+	yum -y install mesa-libGL-devel mesa-libGLU-devel freeglut-devel
+	yum  install qt-devel  qt5-qtbase-devel qt5-linguist
+
+	boost-devel openssl-devel
+
+
+qt5.6.0编译
+
+	./configure -prefix /opt/qtstatic -static -qt-xcb -skip qtdeclarative
+	
+	./configure -prefix /opt/qtstatic -debug-and-release -confirm-license -opensource -c++std c++11 -static  -qt-sql-sqlite  -no-qml-debug -platform linux-g++-64  -qt-zlib -no-journald -qt-libpng -qt-libjpeg   -qt-xcb -skip qtquickcontrols -skip qtquickcontrols2  -skip qtsensors -skip qtdoc -skip qtdeclarative -no-opengl
+	
+demo:
+		#include <QApplication>
+		#include <QLabel>
+		 
+		int main(int argc,char **argv)
+		{
+			QApplication app(argc,argv);
+			QLabel label("Hello World!");
+			label.setAlignment(Qt::AlignCenter);
+			label.resize(400, 300);
+			label.show();
+			return app.exec();
+		}
+	
+	qmake -project QT+=widgets
+	qmake
+	make
+	
+问题：ERROR: Unknown module(s) in QT: quick	
+解决：
+	添加 -skip qtdeclarative
+	
+问题:
+	/libQt5SerialBus.a(qmodbusdevice.o)这个文件中对’QT_MODBUS()’和’QT_MODBUS_LOW()’有多重定义，所以解决问题还得回到这里。
+解决:
+	qt-everywhere-opensource-src-5.6.0/qtserialbus/examples/serialbus/modbus/adueditor
+		> grep QT_MODBUS *
+		mainwindow.cpp:Q_LOGGING_CATEGORY(QT_MODBUS, "qt.modbus")
+		mainwindow.cpp:Q_LOGGING_CATEGORY(QT_MODBUS_LOW, "qt.modbus.lowlevel")
+		modbustcpclient_p.h:            qCDebug(QT_MODBUS_LOW) << "Sent TCP ADU:" << buffer.toHex();
+	注释掉mainwindow.cpp 多定义的内容
+	
+问题:
+	插件错误
+解决:
+	qt-everywhere-opensource-src-5.6.0/qtdeclarative/src/qml/debugger/qqmldebugconnector.cpp
+	Q_QML_IMPORT_DEBUG_PLUGIN(QQmlInspectorServiceFactory) 注释掉
+	
+	
+	
+
+
+

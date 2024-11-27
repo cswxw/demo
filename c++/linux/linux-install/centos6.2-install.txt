@@ -1,0 +1,112 @@
+2.6.32-220.el6.i686
+
+http://vault.centos.org/6.2/isos/i386/
+
+配置静态ip
+	HWADDR=00:15:5D:01:44:11
+	IPADDR=192.168.86.133
+	NETMASK=255.255.255.0
+	GATEWAY=192.168.86.1
+	ONBOOT=yes
+	DNS1=202.96.128.86
+	DNS2=8.8.8.8
+	BOOTPROTO=none#dhcp
+	IPV6INIT=no
+
+/etc/resolv.conf
+	nameserver 114.114.114.114
+	nameserver 8.8.8.8
+	
+bashrc
+	export PS1='[\[\e[35;1m\]\u\e[0m@\h \W]\\$'
+
+源:
+	rpm -q --qf %{version} centos-release;echo
+
+	rpm -q --qf %{arch} centos-release;echo
+	
+	$releasever的值,这个表示当前系统的发行版本，可以通过rpm -qi centos-release命令查看
+	$basearch是我们的系统硬件架构(CPU指令集),使用命令arch得到
+	
+	http://mirrors.aliyun.com/repo/Centos-6.repo
+	wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
+	curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.163.com/.help/CentOS6-Base-163.repo
+	
+	
+	yum clean all
+	yum makecache
+	
+debuginfo
+	http://debuginfo.centos.org/6/i386/
+	http://debuginfo.centos.org/6/i386/kernel-debug-debuginfo-2.6.32-220.el6.i686.rpm
+	http://debuginfo.centos.org/6/i386/kernel-debuginfo-2.6.32-220.el6.i686.rpm
+	http://debuginfo.centos.org/6/i386/kernel-debuginfo-common-i686-2.6.32-220.el6.i686.rpm
+		
+	安装rpm顺序：
+		rpm -ivh kernel-debuginfo-common-x86_64-3.10.0-229.1.2.el7.x86_64.rpm 
+		rpm -ivh kernel-debuginfo-3.10.0-229.1.2.el7.x86_64.rpm 
+	安装完毕，就有命令 debuginfo-install 了
+	
+gcc:
+	yum install gcc-c++
+	1、下载源码包
+	wget http://mirrors.concertpass.com/gcc/releases/gcc-5.2.0/gcc-5.2.0.tar.bz2
+
+	2、解压
+	tar jxvf gcc-5.2.0.tar.bz2
+
+	3、自动安装依赖
+
+	cd gcc-5.2.0
+	./contrib/download_prerequisites
+
+
+	4、建立临时目录，存放编译过程中的中间文件
+	mkdir gcc-build-5.2.0
+	cd gcc-build-5.2.0
+	../configure --enable-checking=release --enable-languages=c,c++ --disable-multilib
+
+
+	5、make
+
+	6、sudo make install
+
+gdb:
+	gdb调试提示:Missing separate debuginfos, use: debuginfo-install glibc-2.12-1.......
+
+	主要原因是gcc版本太高，gdb版本太低，升级以下gdb版本就好了。
+
+	1.下载源码包：
+	   wget http://ftp.nluug.nl/gnu/gdb/gdb-7.8.2.tar.gz
+	 2.解压源码包：
+	   tar -zxvf gdb-7.8.2.tar.gz
+	 3../configure
+	4. make
+	   如果提示缺少一个库：configure: error: no termcap library found
+	5.下载termcap库源码：
+	   wget ftp://ftp.gnu.org/gnu/termcap/termcap-1.3.1.tar.gz
+	6.编译安装termcap库：
+	  ./configure
+	  make
+	 make install
+	7.重新跳到gdb源码目录编译安装：
+	  ./config
+	  make
+	  make install
+	  注意：默认安装在/usr/local/bin目录下，后面自己改环境变量就可以直接用了。
+	
+	问题：WARNING: 'makeinfo' is missing on your system.
+	方法：yum install texinfo
+
+	8 发现还是老版本7.2 怎么办
+
+	查了下GDB的默认安装目录是/usr/loca/bin，export命令查看了下我机器默认的环境变量是/usr/bin，
+	于是备份旧版本的gdb程序后，将usr/loca/bin下新的gdb可执行程序复制过去。gdb -v终于显示版本7.8。调试一下程序，原来的bug不见了。
+
+	done
+
+
+libuv
+	base: yum install automake autoconf libtool
+
+

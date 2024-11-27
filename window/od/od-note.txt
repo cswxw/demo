@@ -1,0 +1,8 @@
+如何找CALL参数[esp/ebp+*]来源与局部变量[ebp-*]来源
+ 找这种：MOV EBX,DWORD PTR SS:[ESP+10]  的来源，
+ 要知道：[esp/ebp+8]  是CALL的第一个参数
+        [esp/ebp+0c] 是CALL的第二个参数
+        [esp/ebp+10] 是CALL的第三个参数
+     类推，每次都是加4，因为push 占用4字节。
+ 找法的话，通过找上一层CALL的参数，例如：[esp+8] 是上一层第一个参数，就返回上层，分析CALL的第一
+ 个参数，可以通过对比[esp+8]的值与CALL的参数值 相同就说明对了

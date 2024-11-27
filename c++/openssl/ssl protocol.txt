@@ -1,0 +1,308 @@
+﻿site:
+	https://blog.csdn.net/s030602122/article/details/53538383
+	https://blog.csdn.net/tterminator/article/details/50675540
+
+SSL握手协议报文格式如下
+1. 类型(Type)(1字节):
+该字段指明使用的SSL握手协议报文类型
+    1) hello_request:
+    2) client_hello:  
+    3) server_hello: 
+    4) certificate: 
+    5) server_key_exchange:  
+    6) certificate_request:  
+    7) server_done: 
+    8) certificate_verify:  
+    9) client_key_exchange:  
+    10) finished:  
+2. 长度(Length)(3字节):
+以字节为单位的报文长度。
+3. 内容(Content)(≥1字节):
+对应报文类型的的实际内容、参数
+    　　1) hello_request: 空
+        2) client_hello:  
+        　　2.1) 版本(ProtocolVersion)
+        　　代表客户端可以支持的SSL最高版本号
+            　　2.1.1) 主版本: 3
+            　　2.1.2) 次版本: 0
+        　　2.2) 随机数(Random)
+        　　客户端产生的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+            　　2.2.1) uint32 gmt_unix_time;
+            　　2.2.2) opaque random_bytes[28];
+        　　4+28=32字节
+        　　2.3) 会话ID: opaque SessionID<0..32>;
+        　　2.4) 密文族(加密套件): 
+        　　一个客户端可以支持的密码套件列表。这个列表会根据使用优先顺序排列，每个密码套件都指定了"密钥交换算法(Deffie-Hellman密钥交换算法、基于RSA的密钥交换和另一种实
+现在Fortezza chip上的密钥交换)"、"加密算法(DES、RC4、RC2、3DES等)"、"认证算法(MD5或SHA-1)"、"加密方式(流、分组)"
+            　　2.4.1) CipherSuite SSL_RSA_WITH_NULL_MD5                  
+            　　2.4.2) CipherSuite SSL_RSA_WITH_NULL_SHA                   
+            　　2.4.3) CipherSuite SSL_RSA_EXPORT_WITH_RC4_40_MD5          
+            　　2.4.4) CipherSuite SSL_RSA_WITH_RC4_128_MD5                
+            　　2.4.5) CipherSuite SSL_RSA_WITH_RC4_128_SHA                
+            　　2.4.6) CipherSuite SSL_RSA_EXPORT_WITH_RC2_CBC_40_MD5     
+            　　2.4.7) CipherSuite SSL_RSA_WITH_IDEA_CBC_SHA              
+            　　2.4.8) CipherSuite SSL_RSA_EXPORT_WITH_DES40_CBC_SHA     
+            　　2.4.9) CipherSuite SSL_RSA_WITH_DES_CBC_SHA               
+            　　2.4.10) CipherSuite SSL_RSA_WITH_3DES_EDE_CBC_SHA       
+            　　2.4.11) CipherSuite SSL_DH_DSS_EXPORT_WITH_DES40_CBC_SHA    
+            　　2.4.12) CipherSuite SSL_DH_DSS_WITH_DES_CBC_SHA             
+            　　2.4.13) CipherSuite SSL_DH_DSS_WITH_3DES_EDE_CBC_SHA        
+            　　2.4.14) CipherSuite SSL_DH_RSA_EXPORT_WITH_DES40_CBC_SHA    
+            　　2.4.15) CipherSuite SSL_DH_RSA_WITH_DES_CBC_SHA             
+            　　2.4.16) CipherSuite SSL_DH_RSA_WITH_3DES_EDE_CBC_SHA       
+            　　2.4.17) CipherSuite SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA   
+            　　2.4.18) CipherSuite SSL_DHE_DSS_WITH_DES_CBC_SHA            
+            　　2.4.19) CipherSuite SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA       
+            　　2.4.20) CipherSuite SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA   
+            　　2.4.21) CipherSuite SSL_DHE_RSA_WITH_DES_CBC_SHA           
+            　　2.4.22) CipherSuite SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA  
+            　　2.4.23) CipherSuite SSL_DH_anon_EXPORT_WITH_RC4_40_MD5     
+            　　2.4.24) CipherSuite SSL_DH_anon_WITH_RC4_128_MD5            
+            　　2.4.25) CipherSuite SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA  
+            　　2.4.26) CipherSuite SSL_DH_anon_WITH_DES_CBC_SHA           
+            　　2.4.27) CipherSuite SSL_DH_anon_WITH_3DES_EDE_CBC_SHA    
+            　　2.4.28) CipherSuite SSL_FORTEZZA_KEA_WITH_NULL_SHA          
+            　　2.4.29) CipherSuite SSL_FORTEZZA_KEA_WITH_FORTEZZA_CBC_SHA  
+            　　2.4.30) CipherSuite SSL_FORTEZZA_KEA_WITH_RC4_128_SHA      
+        　　2.5) 压缩方法
+        3) server_hello: 
+        　　3.1) 版本(ProtocolVersion)
+        　　代表服务端"采纳"的最高支持的SSL版本号
+            　　3.1.1) 主版本: 3
+            　　3.1.2) 次版本: 0
+        　　3.2) 随机数(Random)
+        　　服务端产生的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+            　　3.2.1) uint32 gmt_unix_time;
+            　　3.2.2) opaque random_bytes[28];
+        　　4+28=32字节
+        　　3.3) 会话ID: opaque SessionID<0..32>;
+        　　3.4) 密文族(加密套件): 
+        　　代表服务端采纳的用于本次通讯的的加密套件
+        　　3.5) 压缩方法:
+        　　代表服务端采纳的用于本次通讯的的压缩方法
+    　　总体来看，server_hello就是服务端对客户端的的回应，表示采纳某个方案
+        4) certificate: 
+    　　SSL服务器将自己的"服务端公钥证书(注意，是公钥整数)"发送给SSL客户端  
+    　　ASN.1Cert certificate_list<1..2^24-1>;
+        5) server_key_exchange:   
+        　　1) RSA
+        　　执行RSA密钥协商过程
+            　　1.1) RSA参数(ServerRSAParams)
+                　　1.1.1) opaque RSA_modulus<1..2^16-1>;
+                　　1.1.2) opaque RSA_exponent<1..2^16-1>;
+           　　 1.2) 签名参数(Signature)
+                　　1.2.1) anonymous: null
+                　　1.2.2) rsa
+                    　　1.2.2.1) opaque md5_hash[16];
+                    　　1.2.2.2) opaque sha_hash[20];
+                　　1.2.3) dsa
+                    　　1.2.3.1) opaque sha_hash[20];
+        　　2) diffie_hellman
+        　　执行DH密钥协商过程
+            　　2.1) DH参数(ServerDHParams)
+                　　2.1.1) opaque DH_p<1..2^16-1>;
+                　　2.1.2) opaque DH_g<1..2^16-1>;
+                　　2.1.3) opaque DH_Ys<1..2^16-1>;
+            　　2.2) 签名参数(Signature)
+                　　2.2.1) anonymous: null
+                　　2.2.2) rsa
+                    　　2.2.2.1) opaque md5_hash[16];
+                    　　2.2.2.2) opaque sha_hash[20];
+                　　2.2.3) dsa
+                    　　2.2.3.1) opaque sha_hash[20];
+        　　3) fortezza_kea
+        　　执行fortezza_kea密钥协商过程
+            　　3.1) opaque r_s [128]
+    6) certificate_request:   
+        6.1) 证书类型(CertificateType)
+            6.1.1) RSA_sign
+            6.1.2) DSS_sign
+            6.1.3) RSA_fixed_DH
+            6.1.4) DSS_fixed_DH
+            6.1.5) RSA_ephemeral_DH
+            6.1.6) DSS_ephemeral_DH  
+            6.1.7) FORTEZZA_MISSI
+        6.2) 唯一名称(DistinguishedName)
+        certificate_authorities<3..2^16-1>;
+    7) server_done: 
+    服务器总是发送server_hello_done报文，指示服务器的hello阶段结束
+    struct { } ServerHelloDone;
+    8) certificate_verify:  
+    签名参数(Signature)
+        8.1) anonymous: null
+        8.2) rsa
+            8.2.1) opaque md5_hash[16];
+            8.2.2) opaque sha_hash[20];
+        8.3) dsa
+            8.3.1) opaque sha_hash[20];
+    9) client_key_exchange:  
+        9.1) RSA
+            9.1.1) PreMasterSecret
+                9.1.1.1) ProtocolVersion 
+                9.1.1.2) opaque random[46];
+        9.2) diffie_hellman: opaque DH_Yc<1..2^16-1>;
+        9.3) fortezza_kea
+            9.3.1) opaque y_c<0..128>;
+            9.3.2) opaque r_c[128];
+            9.3.3) opaque y_signature[40];
+            9.3.4) opaque wrapped_client_write_key[12];
+            9.3.5) opaque wrapped_server_write_key[12];
+            9.3.6) opaque client_write_iv[24];
+            9.3.7) opaque server_write_iv[24];
+            9.3.8) opaque master_secret_iv[24];
+            9.3.9) opaque encrypted_preMasterSecret[48];
+    10) finished:  
+        10.1) opaque md5_hash[16];
+        10.2) opaque sha_hash[20];
+		
+		
+
+只验证服务器的SSL握手过程
+
+1. Client Hello
+SSL客户端通过Client Hello消息向SSL服务端发送:
+    1) 支持的SSL版本
+    2) 客户端生成的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+    3) 会话ID
+    3) 加密套件
+        3.1) 加密算法
+        3.2) 密钥交换算法
+        3.3) MAC算法
+        3.4) 加密方式(流、分组)
+    4) 压缩算法(如果支持压缩的话)
+2. Server Hello
+SSL服务器确定本次通信采用的SSL版本和加密套件，并通过Server Hello消息通知给SSL客户端。如果SSL服务器允许SSL客户端在以后的通信中重用本次会话，则SSL服务器会为本次会话分配会
+话ID，并通过Server Hello消息发送给SSL客户端。
+    1) 服务端采纳的本次通讯的SSL版本
+    2) 服务端生成的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+    3) 会话ID
+    3) 服务端采纳的用于本次通讯的加密套件(从客户端发送的加密套件列表中选出了一个)
+        3.1) 加密算法
+        3.2) 密钥交换算法
+        3.3) MAC算法
+        3.4) 加密方式(流、分组)
+    4) 压缩算法(如果支持压缩的话)
+3. Certificate
+SSL服务器将"携带自己公钥信息的数字证书"和到根CA整个链发给客户端通过Certificate消息发送给SSL客户端(整个公钥文件都发送过去)，客户端使用这个公钥完成以下任务:
+    1) 客户端可以使用该公钥来验证服务端的身份，因为只有服务端有对应的私钥能解密它的公钥加密的数据
+    2) 用于对"premaster secret"进行加密，这个"premaster secret"就是用客户端和服务端生成的Ramdom随机数来生成的，客户端用服务端的公钥对其进行了加密后发送给服务端
+4. Server Key Exchange
+密钥交换阶段(可选步骤)，之所以说是可选步骤，是因为只有在下列场景下这个步骤才会发生
+    1) 协商采用了RSA加密，但是服务端的证书没有提供RSA公钥
+    2) 协商采用了DH加密，但是服务端的证书没有提供DH参数
+    3) 协商采用了fortezza_kea加密，但是服务端的证书没有提供参数
+总结来说，"Server Key Exchange"这个步骤是对上一步"Certificate"的一个补充，为了让整个SSL握手过程能正常进行
+5. Server Hello Done
+SSL服务器发送Server Hello Done消息，通知SSL客户端版本和加密套件协商结束 
+6. Client Key Exchange
+SSL客户端验证SSL服务器的证书合法后，利用证书中的公钥加密SSL客户端随机生成的"premaster secret"(通过之前客户端、服务端分别生成的随机数生成的)，并通过
+Client Key Exchange消息发送给SSL服务器。
+注意，这一步完成后，客户端和服务端都已经保存了"主密钥"(之所以这里叫预备主密钥，是因为还没有投入使用)。这个"主密钥"会用于之后的SSL通信数据的加密
+7. Change Cipher Spec
+SSL客户端发送Change Cipher Spec消息，通知SSL服务器后续报文将采用协商好的"主密钥"和加密套件进行加密和MAC计算。
+8. Finished
+SSL客户端计算已交互的握手消息(除Change Cipher Spec消息外所有已交互的消息)的Hash值，利用协商好的密钥和加密套件处理Hash值(计算并添加MAC值、加密等)，并通过Finished消息
+发送给SSL服务器。SSL服务器利用同样的方法计算已交互的握手消息的Hash值，并与Finished消息的解密结果比较，如果二者相同，且MAC值验证成功，则证明密钥和加密套件协商成功。
+9. Change Cipher Spec
+同样地，SSL服务器发送Change Cipher Spec消息，通知SSL客户端后续报文将采用协商好的密钥和加密套件进行加密和MAC计算。
+10. Finished
+SSL服务器计算已交互的握手消息的Hash值，利用协商好的密钥和加密套件处理Hash值(计算并添加MAC值、加密等)，并通过Finished消息发送给SSL客户端。SSL客户端利用同样的方法计算已
+交互的握手消息的Hash值，并与Finished消息的解密结果比较，如果二者相同，且MAC值验证成功，则证明密钥和加密套件协商成功。
+SSL客户端接收到SSL服务器发送的Finished消息后，如果解密成功，则可以判断SSL服务器是数字证书的拥有者，即SSL服务器身份验证成功，因为只有拥有私钥的SSL服务器才能从
+Client Key Exchange消息中解密得到premaster secret，从而间接地实现了SSL客户端对SSL服务器的身份验证。
+
+
+验证服务器和客户端的SSL握手过程
+
+1. Client Hello
+SSL客户端通过Client Hello消息向SSL服务端发送:
+    1) 支持的SSL版本
+    2) 客户端生成的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+    3) 会话ID
+    3) 加密套件
+        3.1) 加密算法
+        3.2) 密钥交换算法
+        3.3) MAC算法
+        3.4) 加密方式(流、分组)
+    4) 压缩算法(如果支持压缩的话)
+2. Server Hello
+SSL服务器确定本次通信采用的SSL版本和加密套件，并通过Server Hello消息通知给SSL客户端。如果SSL服务器允许SSL客户端在以后的通信中重用本次会话，则SSL服务器会为本次会话分配
+会话ID，并通过Server Hello消息发送给SSL客户端。
+    1) 服务端采纳的本次通讯的SSL版本
+    2) 服务端生成的一个用于生成主密钥(master key)的32字节的随机数(主密钥由客户端和服务端的随机数共同生成)
+    3) 会话ID
+    3) 服务端采纳的用于本次通讯的加密套件(从客户端发送的加密套件列表中选出了一个)
+        3.1) 加密算法
+        3.2) 密钥交换算法
+        3.3) MAC算法
+        3.4) 加密方式(流、分组)
+    4) 压缩算法(如果支持压缩的话)
+3. Certificate
+SSL服务器将"携带自己公钥信息的数字证书"和到根CA整个链发给客户端通过Certificate消息发送给SSL客户端(整个公钥文件都发送过去)，客户端使用这个公钥完成以下任务:
+    1) 客户端可以使用该公钥来验证服务端的身份，因为只有服务端有对应的私钥能解密它的公钥加密的数据
+    2) 用于对"premaster secret"进行加密，这个"premaster secret"就是用客户端和服务端生成的Ramdom随机数来生成的，客户端用服务端的公钥对其进行了加密后发送给服务端
+4. Server Key Exchange
+密钥交换阶段(可选步骤)，之所以说是可选步骤，是因为只有在下列场景下这个步骤才会发生
+    1) 协商采用了RSA加密，但是服务端的证书没有提供RSA公钥
+    2) 协商采用了DH加密，但是服务端的证书没有提供DH参数
+    3) 协商采用了fortezza_kea加密，但是服务端的证书没有提供参数
+总结来说，"Server Key Exchange"这个步骤是对上一步"Certificate"的一个补充，为了让整个SSL握手过程能正常进行
+5. Client Certificate Request
+服务器可以向客户发送certificate_request请求证书，即服务端需要客户端证明自己的身份
+6. Server Hello Done
+SSL服务器发送Server Hello Done消息，通知SSL客户端版本和加密套件协商结束 
+7. Client Certificate
+客户端(浏览器)向服务器发送自己的客户端证书，以证明自己的身份
+8. Client Key Exchange
+SSL客户端验证SSL服务器的证书合法后，利用证书中的公钥加密SSL客户端随机生成的"premaster secret"(通过之前客户端、服务端分别生成的随机数生成的)，并通过
+Client Key Exchange消息发送给SSL服务器。
+注意，这一步完成后，客户端和服务端都已经保存了"主密钥"(之所以这里叫预备主密钥，是因为还没有投入使用)。这个"主密钥"会用于之后的SSL通信数据的加密
+9. Certificate Verify
+客户可能发送client_verify报文来校验客户端发送的证书
+10. Change Cipher Spec
+SSL客户端发送Change Cipher Spec消息，通知SSL服务器后续报文将采用协商好的"主密钥"和加密套件进行加密和MAC计算。
+11. Finished
+SSL客户端计算已交互的握手消息(除Change Cipher Spec消息外所有已交互的消息)的Hash值，利用协商好的密钥和加密套件处理Hash值(计算并添加MAC值、加密等)，并通过Finished
+消息发送给SSL服务器。SSL服务器利用同样的方法计算已交互的握手消息的Hash值，并与Finished消息的解密结果比较，如果二者相同，且MAC值验证成功，则证明密钥和加密套件协商成功。
+12. Change Cipher Spec
+同样地，SSL服务器发送Change Cipher Spec消息，通知SSL客户端后续报文将采用协商好的密钥和加密套件进行加密和MAC计算。
+13. Finished
+SSL服务器计算已交互的握手消息的Hash值，利用协商好的密钥和加密套件处理Hash值(计算并添加MAC值、加密等)，并通过Finished消息发送给SSL客户端。SSL客户端利用同样的方法计算已
+交互的握手消息的Hash值，并与Finished消息的解密结果比较，如果二者相同，且MAC值验证成功，则证明密钥和加密套件协商成功。
+SSL客户端接收到SSL服务器发送的Finished消息后，如果解密成功，则可以判断SSL服务器是数字证书的拥有者，即SSL服务器身份验证成功，因为只有拥有私钥的SSL服务器才能从
+Client Key Exchange消息中解密得到premaster secret，从而间接地实现了SSL客户端对SSL服务器的身份验证。
+
+
+
+只验证服务端的TLS握手过程
+
+SSL握手阶段1: Clien Hello
+
+SSL握手阶段2: Server Hello、Certificate、Server Key Exchange、Server Hello Done
+
+可以看到，正如我们在学习协议格式的时候看到的，SSL/TLS的高层协议数据都被封装在了下层的"记录协议数据包"中，统一封装发送给客户端
+Server Hello
+
+重点注意几点，服务端生成了一个和客户端不同的随机数，同时，服务端在客户端提供的加密套件列表中选择了一个加密套件
+
+Certificate
+
+服务端将根证书全部发送给了客户端
+
+Server Key Exchange
+
+服务端向客户端发送了DH过程所需要的参数(因为这个参数证书中没有提供，所以需要"Server Key Exchange"来发送)
+
+Server Hello Done
+
+服务端发送"Server Hello Done"消息，标志着握手阶段2结束
+
+SSL握手阶段3: Client Key Exchange、Change Cipher Spec
+Client Key Exchange
+
+客户端和服务端共同完成DH过程(上以阶段中Serer Key Exchange已经发送了DH的一半参数)
+
+Change Cipher Spec
+
+客户端发送"Change Cipher Spec"(密钥改变协议)通知服务端密钥已经协商好了，以后咱们都用这个密钥进行通信数据的加密吧
+

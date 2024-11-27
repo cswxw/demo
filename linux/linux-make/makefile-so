@@ -1,0 +1,42 @@
+
+TARGET := libxxx.so
+DIRS := ./ 
+SOURCES := $(foreach dir,$(DIRS),$(wildcard $(dir)*.c))
+
+OBJS := $(notdir $(SOURCES:.c=.o))
+OBJ_PATH := ./objs/
+OBJS_O := $(addprefix $(OBJ_PATH), $(OBJS))
+
+
+
+
+CC := gcc -g -Wall
+
+LIBPATH :=  -L./  
+
+LIBS := -lsgd    -ldl -lpthread 
+
+INCLUDE:= -I./ 
+
+CFLAGS :=  $(INCLUDE)  -shared -fPIC
+
+all: $(OBJ_PATH) $(TARGET)
+
+$(OBJ_PATH):
+	mkdir -p ./$@
+
+
+$(TARGET): $(OBJS_O)	
+	@echo 'Linking......'	
+	$(CC) -o $@ $^ $(LIBPATH) $(LIBS) $(CFLAGS)
+	@echo 'Finished Linking: $@'	
+	@echo 'success!'
+
+$(OBJS_O): $(SOURCES)	
+	@echo 'Building file: $(SOURCES)'	
+	$(CC) $(CFLAGS) -o $@ -c $(filter %$(*F).c,$(SOURCES))	
+	@echo 'Finished building: $@'	
+	@echo ''
+clean:
+	rm -rf $(OBJ_PATH)/*  $(TARGET) 
+

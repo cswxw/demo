@@ -1,0 +1,30 @@
+﻿openssl-0.9.8x 源码编译:
+	vs2008
+  perl configure VC-WIN32 --prefix=E:\OpenSSL
+  ms\do_ms.bat
+	DEBUG版修改为
+		perl util\mk1mf.pl no-asm debug VC-WIN32 >ms\nt.mak
+		perl util\mk1mf.pl dll no-asm debug VC-WIN32 >ms\ntdll.mak
+  nmake -f ms\nt.mak  
+
+
+#    elif _MSC_VER == 1900 /*VC2015*/
+#        undef stdin
+#        undef stdout
+#        undef stderr
+_ACRTIMP_ALT FILE* __cdecl __acrt_iob_func(unsigned);
+#define stdin  (__acrt_iob_func(0))
+#define stdout (__acrt_iob_func(1))
+#define stderr (__acrt_iob_func(2))
+
+
+openssl 无法解析的外部符号 ___iob_func
+m_os.h 追加：
+	#    elif _MSC_VER == 1900 /*VC2015*/
+	#        undef stdin
+	#        undef stdout
+	#        undef stderr
+	_ACRTIMP_ALT FILE* __cdecl __acrt_iob_func(unsigned);
+	#define stdin  (__acrt_iob_func(0))
+	#define stdout (__acrt_iob_func(1))
+	#define stderr (__acrt_iob_func(2))

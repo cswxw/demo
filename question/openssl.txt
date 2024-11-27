@@ -1,0 +1,5 @@
+openssl engine 如何进行注册  [ok]
+
+openssl 添加自定义加密算法
+	OpenSSL_add_all_digests
+	https://blog.csdn.net/force_eagle/article/details/794856

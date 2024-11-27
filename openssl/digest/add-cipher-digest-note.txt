@@ -1,0 +1,174 @@
+1. 添加加解密算法：
+	a.修改crypto/object/objects.txt，注册算法OID
+		rsadsi 3 255    : ssf33_sn     : ssf33_ln
+	b.执行
+		perl objects.pl objects.txt obj_mac.num obj_mac.h
+	c.在crypto/evp/下添加e_ssf33_ln.c
+		#include <stdio.h>
+		#include "internal/cryptlib.h"
+
+		# include <openssl/evp.h>
+		# include <openssl/objects.h>
+		# include <openssl/x509.h>
+		# include <openssl/md2.h>
+		# include <openssl/rsa.h>
+
+		#include "internal/evp_int.h"
+
+
+
+		/* FIXME: surely this is available elsewhere? */
+		#define EVP_SSF33_KEY_SIZE      16
+
+		typedef struct
+		{
+			int ks; /* working key */
+		} EVP_SSF33_KEY;
+
+		#define data(ctx) ((EVP_SSF33_KEY *)(ctx)->cipher_data)
+
+		static int ssf33_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key, const unsigned char *iv, int enc)
+		{
+				printf("[%s] ...\n",__func__);
+			return 1;
+		}
+
+		static   int do_cipher (EVP_CIPHER_CTX *ctx, unsigned char *out,
+							  const unsigned char *in, size_t inl){
+				printf("[%s] ...\n",__func__);
+			return 1;         	
+		}
+
+		static  int cleanup(EVP_CIPHER_CTX * a){
+				printf("[%s] ...\n",__func__);
+			return 1;         	
+		}
+
+
+		static const EVP_CIPHER ssf33_evp_cipher=
+		{
+			NID_ssf33_ln, //nid
+			1,  //block_size
+			16,  //key_len
+			0, //iv_len
+			0, //flags
+			ssf33_init_key,
+			do_cipher,
+			cleanup,
+			sizeof(EVP_SSF33_KEY),
+			NULL,
+			NULL,
+			NULL,
+			NULL
+		};
+
+		const EVP_CIPHER *EVP_ssf33_ln(void)
+		{
+			return(&ssf33_evp_cipher);
+		}
+		
+	d.修改 crypto/evp/evp.h 或者 include/openssl/evp.h:
+		EVP_add_cipher(EVP_ssf33_ln());
+		
+	e. 修改crypto/evp/Makefile 或者 crypto/evp/build.info
+		添加e_ssf33_ln.c
+	
+	f.执行 make update
+	
+2. 添加摘要算法:
+
+
+
+
+
+3. 测试代码
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <openssl/bio.h>
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
+
+#include <openssl/rand.h>
+#include <openssl/rsa.h>
+
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/bn.h>
+
+int testxxx(){
+	const EVP_MD *md;
+	EVP_MD_CTX *mdctx;
+	char data[33];
+	unsigned char buf[512*2]={0};
+	unsigned int  len=0;
+
+	md = EVP_get_digestbyname("xxx");
+	
+	if(!md) {
+		printf("%s EVP_get_digestbyname failed %x\n",__func__,md);
+		return -1;
+    }
+	strcpy(data,"12345678123456781234567812345678");
+    mdctx = EVP_MD_CTX_new(); //allocates, initializes and returns a digest context.
+    EVP_DigestInit_ex(mdctx, md, NULL);  //sets up digest context ctx to use a digest type from ENGINE impl.
+	size_t nread=0;
+ 	EVP_DigestUpdate(mdctx, data, strlen(data)); //hashes cnt bytes of data at d into the digest context ctx. 
+ 	
+  EVP_DigestFinal_ex(mdctx, buf, (unsigned int *)&len);//retrieves the digest value from ctx and places it in md. 
+	
+   EVP_MD_CTX_free(mdctx);
+	
+	return 0;
+}
+
+
+int testssf33(){
+	/* Allow enough space in output buffer for additional block */
+	unsigned char inbuf[1024], outbuf[1024 + EVP_MAX_BLOCK_LENGTH];
+	int inlen, outlen;
+	EVP_CIPHER_CTX *ctx;
+	const EVP_CIPHER *cipher;
+	//unsigned char iv[] = "1234567887654321";   //加密的初始话矢量，初始化加密函数的变量。 31323334353637383837363534333231
+
+	unsigned char key[] = "0123456789abcdeF";  //自定义加密key  30313233343536373839616263646546
+
+	ctx = EVP_CIPHER_CTX_new();  //creates a cipher context.
+	
+	 cipher= EVP_get_cipherbyname("ssf33_ln");
+	EVP_CipherInit_ex(ctx, EVP_ssf33_ln(), NULL, NULL, NULL,
+		   1);
+	/* Now we can set key and IV */
+	EVP_CipherInit_ex(ctx, NULL, NULL, key, 0, 1);
+	inlen = 20;
+	EVP_CipherUpdate(ctx, outbuf, &outlen, inbuf, inlen);
+	
+	EVP_CipherFinal_ex(ctx, outbuf, &outlen);
+
+	EVP_CIPHER_CTX_free(ctx);
+
+	return 0;
+}
+
+int main(){
+	ERR_load_crypto_strings();
+	OpenSSL_add_all_ciphers();
+	OpenSSL_add_all_algorithms();
+	
+	/*
+	[ssf33_init_key] ...
+	[do_cipher] ...
+	[cleanup] ...
+	*/
+	testssf33();
+}
+
+
+
+
+
+
+	
+

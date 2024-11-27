@@ -1,0 +1,3 @@
+https://blog.csdn.net/yyfzy/article/details/46682207  //通过OpenSSL解码X509证书文件
+https://blog.csdn.net/yyfzy/article/details/46798965  //通过OpenSSL解析X509证书基本项
+https://blog.csdn.net/y97523szb/article/details/48864157 //SSL通信过程抓包分析

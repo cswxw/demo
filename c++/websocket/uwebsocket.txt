@@ -1,0 +1,21 @@
+
+https://github.com/uNetworking/uWebSockets/
+uWS:
+	libeay32.lib;ssleay32.lib;libuv.lib;zlibstat.lib;iphlpapi.lib;Psapi.lib;Userenv.lib
+		运行库
+			多线程调试 DLL (/MDd)
+
+zlib  
+	修改ZEXPORT 空 为 WINAPI 
+	#ifndef ZEXPORT
+	#  define ZEXPORT WINAPI
+	#endif
+	
+	zlib-1.2.11\contrib\vstudio\vc14  vs 2015
+
+libuv:
+	https://github.com/svn2github/gyp
+	vcbuild.bat
+
+openssl:
+	

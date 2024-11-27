@@ -1,0 +1,154 @@
+// init list 
+	HWND hList = GetDlgItem(IDC_LIST1)->GetSafeHwnd();
+	ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
+	ListView_SetExtendedListViewStyleEx(hList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
+
+     // 设置ListView的列  
+    LVCOLUMN vcl;  
+    vcl.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;  
+    // 第一列  
+    vcl.pszText = _T("hWnd");//列标题  
+    vcl.cx = 90;//列宽  
+    vcl.iSubItem = 0;//子项索引，第一列无子项  
+    ListView_InsertColumn(hList, 0, &vcl); 
+	// 第二列  
+    vcl.pszText = _T("text");  
+    vcl.cx = 90;  
+    vcl.iSubItem = 1;//子项索引  
+    ListView_InsertColumn(hList, 1, &vcl);  
+	// 第二列  
+    vcl.pszText = _T("classname");  
+    vcl.cx = 90;  
+    vcl.iSubItem = 2;//子项索引  
+    ListView_InsertColumn(hList, 2, &vcl);  
+
+	UINT i = 0;
+
+	LIST* o = EnumAllChildWindow(this->GetSafeHwnd());
+    
+	LVITEM vitem;  
+    vitem.mask = LVIF_TEXT;  
+	for (i = 0;i < LIST_NUM(o);i++)
+	{
+		char handle[100];
+		char buff[1024] = {0};
+		HWND hControl = *((HWND *)LIST_DATA(o, i));
+		::GetWindowTextA(hControl,buff,sizeof(buff)-1);
+       /* 
+            策略： 
+            先添加项再设置子项内容 
+        */  
+		sprintf(handle,"%#x",hControl);
+
+        vitem.pszText = handle;  
+        vitem.iItem = i;  
+        vitem.iSubItem = 0;  
+        ListView_InsertItem(hList, &vitem);  
+        // 设置子项  
+		vitem.iItem = i;  
+        vitem.iSubItem = 1;  
+        vitem.pszText = buff;  
+        ListView_SetItem( hList, &vitem);  
+		::GetClassNameA(hControl,buff,sizeof(buff)-1);
+		// 设置子项  
+		vitem.iItem = i;  
+        vitem.iSubItem = 2;  
+        vitem.pszText = buff;  
+        ListView_SetItem( hList, &vitem);  
+	}
+	// 清除ListView中的所有项  
+    //ListView_DeleteAllItems(hList);  
+	FreeWindowList(o);
+
+
+
+
+	
+	switch(message){
+		case WM_COMMAND:{
+			switch (wParam)
+			{
+				case IDC_BUTTON1:{ //add
+					LvInsert(this->GetSafeHwnd(),IDC_LIST1,3,"1123","2234","345");
+
+					break;
+				}
+				case IDC_BUTTON3:{ //modify
+					if (LvIsSelected(this->GetSafeHwnd(), IDC_LIST1))
+					{
+						LvRename(this->GetSafeHwnd(), IDC_LIST1, LvGetSelected(this->GetSafeHwnd(), IDC_LIST1));
+					}
+					break;
+				}
+
+				case IDC_BUTTON2:{ //delete
+					HWND hWnd = GetDlgItem(IDC_LIST1)->GetSafeHwnd();
+					UINT i = ListView_GetNextItem(hWnd, -1, LVNI_FOCUSED | LVNI_SELECTED);
+					
+					if (i != INFINITE){
+						char databuf[100];
+						ListView_GetItemText(hWnd,i,0,databuf,sizeof(databuf));
+						LvDeleteItem(this->GetSafeHwnd(),IDC_LIST1,i);
+
+					}
+
+					break;
+				}
+			}
+			break;
+		}
+		case WM_NOTIFY:{
+			NMHDR* n = (NMHDR *)lParam;
+			switch (n->idFrom)
+			{
+				case IDC_LIST1:{
+					switch (n->code)
+					{
+						case NM_DBLCLK:
+							::SendMessageA(this->GetSafeHwnd(), WM_COMMAND, IDC_BUTTON2, 0);
+							break;
+						case LVN_KEYDOWN:{
+							NMLVKEYDOWN * key = (NMLVKEYDOWN *)n;
+							if (key != NULL)
+							{
+								UINT code = key->wVKey;
+								switch (code)
+								{
+								case VK_F2://F2
+									::SendMessageA(this->GetSafeHwnd(), WM_COMMAND, IDC_BUTTON3, 0);
+									break;
+
+								case VK_DELETE://DELETE
+									::SendMessageA(this->GetSafeHwnd(), WM_COMMAND, IDC_BUTTON2, 0);
+									break;
+
+								case VK_RETURN://RETURN
+									::SendMessageA(this->GetSafeHwnd(), WM_COMMAND, IDC_BUTTON1, 0);
+									break;
+								}
+
+							}
+							break;
+						}
+						case LVN_ENDLABELEDITA:{//修改完毕
+							NMLVDISPINFOA* info = (NMLVDISPINFOA *)n;
+							if (info->item.pszText != NULL){ //指修改后的值
+								LvSetItemA(this->GetSafeHwnd(), IDC_LIST1, info->item.iItem, 0, info->item.pszText);
+							}
+
+							break;
+						}
+						case LVN_ITEMCHANGED:{// an item has changed
+							NMLISTVIEW * listview = (NMLISTVIEW*)n;
+							int a = listview->iItem ;
+							break;
+						}
+					}
+				}
+			}
+			break;
+		}
+		default:break;
+
+	}
+

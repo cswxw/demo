@@ -1,0 +1,11 @@
+struct SM2CiphertextValue_st {
+	BIGNUM *xCoordinate;
+	BIGNUM *yCoordinate;
+	ASN1_OCTET_STRING *hash;
+	ASN1_OCTET_STRING *ciphertext;
+};
+
+
+根据国密推荐的SM2椭圆曲线公钥密码算法，首先产生随机数计算出曲线点C1，2个32byte的BigInteger大数，即为SM2加密结果的第1部分。第2部分则是真正的密文，是对明文的加密结果，长度和明文一样。第3部分是杂凑值，用来效验数据。按国密推荐的256位椭圆曲线，明文加密结果比原长度会大96byte。
+
+

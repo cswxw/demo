@@ -1,0 +1,7 @@
+二.过CE非法及反调试
+1.打开PChunterx64选中游戏右键结束掉TenSLX.dll的三个线程。
+
+2.打开CE-设置-调试器选项-Debugget method，选择VEH调试器。VEH调试器是注入DLL到要调试的进程，一般TX游戏都会对这个地方进行HOOK。我们打开PChunterx64对NBA2KOL进程钩子进行
+扫描。发现了这个 ntdll.dll->LdrInitializeThunk，右键恢复它就行了。
+（说明：Windows 的 DLL 装入(除 ntdll.dll 外)和连接是通过 ntdll.dll 中的一个函数LdrInitializeThunk()实现的.）
+

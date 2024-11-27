@@ -1,0 +1,23 @@
+1. 根据进程pid查端口：
+	netstat -nap | grep pid
+
+2. 根据端口port查进程
+	netstat -nap | grep port
+	
+	ps aux | grep `netstat -nap | grep 80 | awk '{print $7}' | awk -F '/' '{print $1}' | head -n 1`
+	
+	
+
+添加混杂模式 
+	ifconfig eth0 promisc 
+
+取消混杂模式 
+	ifconfig eth0 -promisc
+
+批量转unix to dos
+	sed -i 's/$/\r/g' `grep '$' -rl .`
+
+显示rpm包文件夹
+	rpm -qpl `ls -1` | awk -F [\/] '{print "/"$2"/"$3}' | uniq -c
+
+

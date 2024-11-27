@@ -1,0 +1,57 @@
+Linux上的静态库，其实是目标文件的归档文件。
+在Linux上创建静态库的步骤如下：
+
+    写源文件，通过 gcc -c xxx.c 生成目标文件。
+    用 ar 归档目标文件，生成静态库。
+    配合静态库，写一个使用静态库中函数的头文件。
+    使用静态库时，在源码中包含对应的头文件，链接时记得链接自己的库。
+
+下面通过实例具体讲解。
+写源文件，生成目标文件。
+
+第一个源文件 my_print.c
+
+#include <stdio.h>
+
+void cout(const char * message)
+{
+    fprintf(stdout, "%s\n", message);
+}
+
+源文件2： my_math.c
+
+int add(int a, int b)
+{
+    return a + b;
+}
+
+int subtract(int a, int b)
+{
+    return a - b;
+}
+
+使用gcc，为这两个源文件生成目标文件：
+
+gcc -c my_print.c my_math.c
+
+我们就得到了 my_print.o 和 my_math.o。
+归档目标文件，得到静态库。
+
+我们使用 ar 将目标文件归档：
+
+ar crv libmylib.a my_print.o my_math.o
+
+我们就得到了libmylib.a，这就是我们需要的静态库。
+
+上述命令中 crv 是 ar的命令选项：
+
+    c 如果需要生成新的库文件，不要警告
+    r 代替库中现有的文件或者插入新的文件
+    v 输出详细信息
+
+通过 ar t libmylib.a 可以查看 libmylib.a 中包含的目标文件。
+
+可以通过 ar --help 查看更多帮助。
+
+注意：我们要生成的库的文件名必须形如 libxxx.a ，这样我们在链接这个库时，就可以用 -lxxx。
+反过来讲，当我们告诉编译器 -lxxx时，编译器就会在指定的目录中搜索 libxxx.a 或是 libxxx.so。

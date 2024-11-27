@@ -1,0 +1,54 @@
+﻿默认情况下，openssl 输出格式为 PKCS#1-PEM
+生成RSA私钥(无加密)
+	gmssl genrsa -out rsa_private.key 2048
+生成RSA公钥
+	gmssl rsa -in rsa_private.key -pubout -out rsa_public.key
+	
+生成RSA私钥(使用aes256加密)
+	gmssl genrsa -aes256 -passout pass:111111 -out rsa_aes_private.key 2048
+此时若生成公钥，需要提供密码
+	openssl rsa -in rsa_aes_private.key -passin pass:111111 -pubout -out rsa_public.key
+	
+生成 RSA 私钥和自签名证书
+	gmssl req -newkey rsa:2048 -nodes -keyout rsa_private.key -x509 -days 365 -out cert.crt
+KEY转pem
+	openssl rsa -in serverb.key -outform PEM -out serverb.pem
+
+生成自签证书和二级证书:
+	openssl genrsa  -out root.key 4096
+	openssl req -new -x509 -days 3650 -key root.key -out root.crt
+
+	openssl genrsa  -out server.key 4096
+	openssl req -new -key server.key -out server.csr 
+	openssl x509 -req -days 365 -in server.csr -CA root.crt -CAkey root.key -set_serial 01 -out server.crt
+
+
+demo:
+	生成root证书
+		openssl genrsa  -out root.key 4096
+		openssl req -new -x509 -days 3650 -key root.key -out root.crt
+	生成rsa证书
+		gmssl genrsa -out rsa_enc.key 2048
+		openssl req -new -key rsa_enc.key -out rsa_enc.req
+		gmssl x509 -req -days 3650 -in rsa_enc.req -CA root.crt -CAkey root.key -set_serial 01 -out rsa_enc.crt
+	生成sm2证书
+		生成SM2私钥
+			gmssl ecparam -genkey -name sm2p256v1 -text -out sm2_enc.key
+		生成证书请求
+			gmssl req -new -key sm2_enc.key -out sm2_enc.req
+		使用根证书进行签名
+			gmssl x509 -req -days 3650 -in sm2_enc.req -CA root.crt -CAkey root.key -set_serial 01 -out sm2_enc.crt
+			
+			
+	测试证书
+		server:
+			openssl s_server -msg -verify -tls1_2 -state -cert rsa_enc.crt -key rsa_enc.key -accept 18444
+		client:
+			openssl s_client -msg -verify -tls1_2  -state -showcerts -cert rsa_enc_2.crt -key rsa_enc_2.key -connect localhost:18444
+			
+			
+			
+			
+			
+		
+		

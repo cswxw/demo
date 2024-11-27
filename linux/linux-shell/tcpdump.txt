@@ -1,0 +1,2 @@
+tcpdump -s0 -i eth0 host 192.168.1.90 -w abc.cap
+	      -s snaplen         snaplen表示从一个包中截取的字节数。0表示包不截断，抓完整的数据包。默认的话 tcpdump 只显示部分数据包,默认68字节。

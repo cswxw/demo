@@ -1,0 +1,144 @@
+以下简单总结下ffmpeg命令参数：
+
+-i 指定要转换视频的源文件
+-s 视频转换后视频的分辨率
+-vcodec 视频转换时使用的编解码器（-codecs）
+-r 视频转换换的桢率(默认25桢每秒)
+-b 视频转换换的bit率
+-ab 音频转换后的bit率(默认64k)
+-acodec 制度音频使用的编码器（-codecs）
+-ac 制定转换后音频的声道
+
+-ar 音频转换后的采样率
+
+-ac 设定声音的Channel数 
+
+-an 禁用音频
+
+-vn 禁用视频 ,不处理视频
+
+-acodec copy 复制音频，不转码
+
+-vcodec copy 复制视频，不转码
+
+-aspect 设定画面的比例 
+
+
+1. 视频格式转换
+	ffmpeg -i input.avi output.mp4
+	ffmpeg -i input.mp4 output.ts
+
+2. 提取音频
+	ffmpeg -i 晓松奇谈.mp4 -acodec copy -vn output.aac
+
+	ffmpeg -i 晓松奇谈.mp4 -acodec aac -vn output.aac
+
+
+
+
+3. 提取视频
+	ffmpeg -i input.mp4 -vcodec copy -an output.mp4
+	
+4. 视频剪切
+	ffmpeg -ss 00:00:15 -t 00:00:05 -i input.mp4 -vcodec copy -acodec copy output.mp4
+		-ss表示开始切割的时间，-t表示要切多少。上面就是从开始，切5秒钟出来。
+	注意一个问题，ffmpeg 在切割视频的时候无法做到时间绝对准确，
+	因为视频编码中关键帧（I帧）和跟随它的B帧、P帧是无法分割开的，否则就需要进行重新帧内编码，会让视频体积增大。
+	所以，如果切割的位置刚好在两个关键帧中间，那么 ffmpeg 会向前/向后切割，
+	所以最后切割出的 chunk 长度总是会大于等于应有的长度。
+
+5. 码率控制
+
+	什么是码率？很简单： bitrate = file size / duration
+
+	比如一个文件20.8M，时长1分钟，那么，码率就是：
+	biterate = 20.8M bit/60s = 20.8*1024*1024*8 bit/60s= 2831Kbps
+
+	-b:v主要是控制平均码率。 比如一个视频源的码率太高了，有10Mbps，文件太大，想把文件弄小一点，但是又不破坏分辨率。
+		ffmpeg -i input.mp4 -b:v 2000k output.mp4
+	上面把码率从原码率转成2Mbps码率，这样其实也间接让文件变小了。目测接近一半。
+
+		ffmpeg -i input.mp4 -b:v 2000k -bufsize 2000k output.mp4
+			-bufsize 用于设置码率控制缓冲器的大小，设置的好处是，让整体的码率更趋近于希望的值，减少波动。
+
+	-minrate -maxrate就简单了，在线视频有时候，希望码率波动，不要超过一个阈值，可以设置maxrate。
+	ffmpeg -i input.mp4 -b:v 2000k -bufsize 2000k -maxrate 2500k output.mp4
+
+
+6. 视频编码格式转换
+	ffmpeg -i input.mp4 -vcodec h264 output.mp4
+	
+7. 只提取视频ES数据
+	ffmpeg –i input.mp4 –vcodec copy –an –f m4v output.h264
+	
+8.1 将输入的1920x1080缩小到960x540输出:
+	ffmpeg -i input.mp4 -vf scale=960:540 output.mp4
+
+8.2 为视频添加logo
+	ffmpeg -i input.mp4 -i iQIYI_logo.png -filter_complex overlay output.mp4
+	
+	
+9. 抓取视频的一些帧，存为jpeg图片
+	ffmpeg -i input.mp4 -r 1 -q:v 2 -f image2 pic-%03d.jpeg
+		-r 表示每一秒几帧
+		-q:v表示存储jpeg的图像质量，一般2是高质量。
+		
+	ffmpeg -i input.mp4 -ss 00:00:20 -t 10 -r 1 -q:v 2 -f image2 pic-%03d.jpeg
+		-ss 表示开始时间
+		-t表示共要多少时间。
+		ffmpeg会从input.mp4的第20s时间开始，往下10s，即20~30s这10秒钟之间，每隔1s就抓一帧，总共会抓10帧。
+		
+10.输出YUV420原始数据	
+	ffmpeg -i input.mp4 output.yuv
+	
+	ffmpeg -i input.mp4 -ss 00:00:20 -t 10 -r 1 -q:v 2 -f image2 pic-%03d.jpeg
+	ffmpeg -i pic-001.jpeg -s 1440x1440 -pix_fmt yuv420p xxx3.yuv
+	
+	
+	
+电影：23.976fps
+电视（PAL）：25fps
+电视（NTSC）：29.97fps
+CRT显示器：60Hz-85Hz
+液晶显示器：60Hz-75Hz
+3D显示器： 120Hz
+
+影响因素
+
+	既然刷新率越快越好，为什么还要强调没必要追求太高的刷新率呢？
+	其中原因是在显示‘分辨率’不变的情况下，FPS越高，则对显卡的处理能力要求越高。
+	电脑中所显示的画面，都是由显卡来进行输出的，因此屏幕上每个像素的填充都得由显卡来进行计算、输出。
+	当画面的分辨率是1024×768时，画面的刷新率要达到24帧/秒，那么显卡在一秒钟内需要处理的像素量就达到了“1024×768×24=18874368”。
+	如果要求画面的刷新率达到50帧/秒，则数据量一下子提升到了“1024×768×50=39321600”。
+	FPS与分辨率、显卡处理能力的关系如下：
+	处理能力=分辨率×刷新率。这也就是为什么在玩游戏时，分辨率设置得越大，画面就越不流畅的原因了。
+刷新率
+
+	刷新频率：即屏幕刷新的速度。
+	刷新频率越低，图像闪烁、停顿和抖动的就越厉害，眼睛疲劳得就越快。
+	采用70Hz以上的刷新频率时才能基本消除闪烁，显示器最好稳定工作在允许的最高频率下，一般是85Hz。
+	在显示器内部，有一些振荡电路。
+	人们通常所说的刷新频率，指的就是振荡电路的频率。
+	刷新频率的计算公式是：水平同步扫描线X帧频=刷新频率。
+	普通显示器的刷新频率在15.75kHz－95kHz间。
+	15.75kHz是人体对显示器最低要求的刷新频率，是由525(线)X30(fps)=15.75kHz计算所得。
+	由此，我们可以逆推出显示器扫描一条水平线所花的时间：众所周知，时间和频率是倒数关系，即1/频率=时间。
+	在这里，1/15.75kHz= 63.5us（微秒）,也就是说在每帧525线、每秒30帧的模式下，显示器扫描一条水平线所花的时间是63.5微秒。
+			
+		
+Duration: 02:04:15.22, start: 0.000000, bitrate: 1274 kb/s
+Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p, 854x480 [SAR 1:1 DAR 427:240], 1201 kb/s, 29.97 fps, 29.97 tbr, 30k tbn, 59.94 tbc (default)
+
+Duration: 00:12:14.26, start: 0.000000, bitrate: 839 kb/s
+Video: h264 (High) (avc1 / 0x31637661), yuv420p, 1280x720, 513 kb/s, 23.98 fps, 23.98 tbr, 16k tbn, 47.95 tbc (default)
+
+Duration: 03:59:53.03, start: 0.000000, bitrate: 3169 kb/s  
+Video: mpeg1video (MPEG / 0x4745504D), yuv420p(tv), 800x448 [SAR 1:1 DAR 25:14], 104857 kb/s, 30 fps, 30 tbr, 30 tbn, 30 tbc	  
+
+	
+ffmpeg -i 1.mkv -threads 5  -r 24 -acodec copy -vcodec libx264 -b 600k 2.mp4
+
+批量转换:
+	for /R %v IN (*.ts) do ( ffmpeg -i "%v" -acodec copy -vcodec libx264  "result\%~nv.mp4")
+	
+视频比特率是指每秒传送的比特(bit)数。单位为bps(Bit Per Second)，比特率越高，每秒传送数据就越多，画质就越清晰。	

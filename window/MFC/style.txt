@@ -1,0 +1,49 @@
+修改mfc 风格
+	//TODO 待添加
+		1. 列表风格
+		2. 按钮 鼠标移动上去高亮
+
+//#ifdef _UNICODE
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+//#endif
+
+
+//背景色批量修改
+//重载WindowProc
+LRESULT CXXX::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	switch(message){
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLORDLG:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORLISTBOX:
+		case WM_CTLCOLORMSGBOX:
+		case WM_CTLCOLORSCROLLBAR:
+		case WM_CTLCOLORSTATIC:
+			HWND hwndStatic = (HWND) lParam;
+			if (::GetDlgCtrlID(hwndStatic)==IDC_STATIC_STATUS)
+			{
+				HDC hdcStatic = (HDC) wParam; 
+				::SetTextColor(hdcStatic,RGB(255,0,0));
+				::SetBkColor(hdcStatic,RGB(255,255,255));
+				return (UINT)hdcStatic;
+			}	
+			
+			return (UINT)::GetStockObject(WHITE_BRUSH);
+		default:break;
+	}
+	return CDialog::WindowProc(message, wParam, lParam);
+}
+
+
+
+

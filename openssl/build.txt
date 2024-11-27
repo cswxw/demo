@@ -1,0 +1,8 @@
+openssl-0.9.8x 源码编译:
+	vs2008
+  perl configure VC-WIN32 --prefix=E:\OpenSSL
+  ms\do_ms.bat
+	DEBUG版修改为
+		perl util\mk1mf.pl no-asm debug VC-WIN32 >ms\nt.mak
+		perl util\mk1mf.pl dll no-asm debug VC-WIN32 >ms\ntdll.mak
+  nmake -f ms\nt.mak  

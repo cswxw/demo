@@ -1,0 +1,44 @@
+WinDbg:
+	!handle 000000c4 f 命令查看000000c4句柄的信息
+	!locks查看进程中哪些锁处于锁定状态
+	!cs -l命令获取更为全面的关键区信息：
+	dt命令查看该结构定义    //0:002> dt RTL_CRITICAL_SECTION
+		example:
+			0:002> dt RTL_CRITICAL_SECTION
+			Test1!RTL_CRITICAL_SECTION
+			   +0x000 DebugInfo        : Ptr32 _RTL_CRITICAL_SECTION_DEBUG
+			   +0x004 LockCount        : Int4B
+			   +0x008 RecursionCount   : Int4B
+			   +0x00c OwningThread     : Ptr32 Void
+			   +0x010 LockSemaphore    : Ptr32 Void
+			   +0x014 SpinCount        : Uint4B
+			   
+			   其中，LockCount字段用来标识关键区的锁状态，
+			         RecursionCount字段用来记录递归次数，用来支持同一个线程多次进入关键区，
+					 OwningThread字段用来记录进入（拥有）关键区的线程ID，
+					 LockSemaphore用来记录这个关键区对应的事件对象，当有线程需要等待这个关键区时，便是通过等待这个事件来做到的，这个事件对象是按需创建的，如果LockSemaphore为NULL表示这个关键区从来没有线程在此等待过。
+
+
+
+
+
+windbg 调试bug:
+	!address 命令查看该地址所在内存页的属性信息	
+		Allocation Base:  动态分配内存单元的始地址。
+		Base Address：  是基地址，例如，装入一个模块，从某地址开始存放，而这个始地址就是BaseAddress。
+		Allocation Base 和Base Address的区别主要在于前者用于模块，可以看成 程序块始地址；后者用于数据，可以看成数据块始地址。
+		Protect： 内存页的属性信息。PAGE_EXECUTE_READ是可读可执行。
+	补充：与内存相关的指令
+		.dvalloc申请虚拟内存
+		.dvfree释放虚拟内存
+		.writemem写内存到文件
+		.readmem读文件到内存
+		!address 内存信息查看
+		!vprot   看虚拟内存保护属性
+		
+	kn命令查看调用堆栈信息
+	.frame 2命令切换到指定堆栈函数处
+	ub 013f41a4查看堆栈返回函数地址的代码信息
+	dv /i /V命令，查看当前函数用到的变量信息
+	dt 命令查看变量详细信息
+

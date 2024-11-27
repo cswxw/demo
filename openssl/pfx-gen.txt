@@ -1,0 +1,7 @@
+//私钥
+gmssl genrsa -out openssl.key 1024
+//生成证书
+gmssl req -new -x509 -key openssl.key -out openssl.crt -days 3650 -subj /CN=abc.website
+//生成pfx
+gmssl pkcs12 -export -out openssl.pfx -inkey openssl.key -in openssl.crt
+

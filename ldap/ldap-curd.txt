@@ -1,0 +1,86 @@
+//***********************shcema语法**************************************//
+schema语法:
+	类型 (编号 NAME ('别名' '全称')
+		DESC '描述'
+		SUP  '继承的结构或属性'
+		EQUALITY 相等方式		//是用来指定某属性的匹配规则
+		SUBSTR
+		SYNTAX 预定义的编号                //就是LDAP中会用到的数据类型和数据约束这个语法是遵从X.500中数据约束的定义的。其定义需要有一个ID（遵从X.500）以及说明（DESP）
+		结构类型/抽象类型/辅助类型
+		MUST ()
+		MAY  ()
+		)
+	
+	
+	attributetype ( 2.5.4.4 NAME ( 'sn' 'surname' )
+			DESC 'RFC2256: last (family) name(s) for which the entity is known by'
+			SUP name )
+
+	attributetype ( 2.5.4.2 NAME 'knowledgeInformation'
+			DESC 'RFC2256: knowledge information'
+			EQUALITY caseIgnoreMatch
+			SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
+
+	attributetype ( 2.5.4.20 NAME 'telephoneNumber'
+			DESC 'RFC2256: Telephone Number'
+			EQUALITY telephoneNumberMatch
+			SUBSTR telephoneNumberSubstringsMatch
+			SYNTAX 1.3.6.1.4.1.1466.115.121.1.50{32} )
+			
+	#attributetype ( 2.5.4.35 NAME 'userPassword'
+	#       DESC 'RFC2256/2307: password of user'
+	#       EQUALITY octetStringMatch
+	#       SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{128} )
+			
+	objectclass ( 2.5.6.6 NAME 'person'
+			DESC 'RFC2256: a person'
+			SUP top STRUCTURAL
+			MUST ( sn $ cn )
+			MAY ( userPassword $ telephoneNumber $ seeAlso $ description ) )
+
+//***********************解析schema**************************************//
+cat test.schema
+ attributeType ( 3.1.2.1.101 NAME 'myGameVersion'
+        DESC 'game version'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768}
+        SINGLE-VALUE )
+ attributetype ( 3.5.4.4 NAME ( 'myGameName' )
+        DESC 'game name'
+        SUP name )
+ objectclass ( 3.1.2.2.1 NAME 'myGame'
+        DESC 'My object class with MyLocal'
+        AUXILIARY
+        MUST (myGameName)
+        MAY (myGameVersion)
+        )
+cat conver.conf 
+		include /etc/openldap/schema/core.schema
+		include /root/ldap-test/test.schema
+ slaptest -f ./conver.conf -F ./tmp/
+//***********************导入模块**************************************//
+ cd /etc/openldap/schema/
+ ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f cosine.ldif
+ ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f nis.ldif
+
+
+
+//***********************添加数据**************************************//
+test.ldif:
+	dn: ou=test,dc=my
+	ou: test
+	objectClass: top
+	objectClass: organizationalUnit
+	objectClass: domainRelatedObject
+	associatedDomain: my
+
+ldapadd -x -W -D 'dc=my' -f test.ldif
+
+
+
+//***********************查询数据**************************************//
+搜索数据
+	ldapsearch -x -b "dc=my" -H ldap://127.0.0.1  
+//***********************修改数据**************************************//
+
+//***********************删除数据**************************************//

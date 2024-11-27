@@ -1,0 +1,63 @@
+[recv] 220 s8.chinaemail.cn ESMTP Bossmail (2.4.1.3347)
+
+[send] EHLO xxxxxx@xxxxxx.net.cn
+
+[recv] 250-s8.chinaemail.cn
+250-PIPELINING
+250-SIZE 419430400
+250-ETRN
+250-STARTTLS
+250-AUTH LOGIN PLAIN
+250-AUTH=LOGIN PLAIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 DSN
+
+[send] AUTH LOGIN
+
+[recv] 334 VXNlcm5hbWU6
+
+[send] xxxxxx(用户名base64)
+
+[recv] 334 UGFzc3dvcmQ6
+
+[send] xxxxxx(密码base64)
+
+[recv] 235 2.0.0 Authentication successful
+
+[send] MAIL FROM: <xxxxxx@xxxxxx.net.cn>
+
+[recv] 250 2.1.0 Ok
+
+[send] RCPT TO: <xxxxxx@xxxxxx.net.cn>
+
+[recv] 250 2.1.5 Ok
+
+[send] DATA
+
+[recv] 354 End data with <CR><LF>.<CR><LF>
+
+[send] From: xxxxxx@xxxxxx.net.cn
+To: recv@xxxxxx.net.cn
+Subject: subject
+MIME-Version: 1.0
+Content-Type: multipart/mixed;boundary=qwertyuiop
+
+
+[send] --qwertyuiop
+Content-Type: text/plain;charset="gb2312"
+
+this is a test!
+
+
+[send] --qwertyuiop--
+.
+
+[recv] 250 2.0.0 Ok: queued as 0964682E7D
+
+250 2.0.0 Ok: queued as 0964682E7D
+
+[send] QUIT
+
+[recv] 221 2.0.0 Bye
+

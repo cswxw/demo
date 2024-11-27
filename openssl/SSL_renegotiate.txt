@@ -1,0 +1,52 @@
+void run() {
+	time_t lastRenewTime;
+	time_t currentTime;
+
+	time(&lastRenewTime);
+	static BIO *out = BIO_new_fp(stdout,BIO_NOCLOSE);
+
+	printf("SSL/TLS version : %s \n", SSL_get_version(mySSL));
+	SSL_SESSION *session = SSL_get_session(mySSL);
+
+	printf("session A\n");
+	SSL_SESSION_print(out, session);
+
+	while (1)
+	{
+		time(&currentTime);
+
+		if ((currentTime - lastRenewTime) > 10)
+		{
+			printf("renegotiating ...\n");
+			SSL_renegotiate(mySSL);
+			int pending = SSL_renegotiate_pending(mySSL);
+			int handShake = SSL_do_handshake(mySSL);
+			int timeout = 20000;
+
+			printf("do_handshake %d\n", handShake);
+			// int );
+			do {
+				timeout--;
+				// i think the actual renegotiate req would only go to server whenever a data is sent. right ?
+				SendDataToServer();
+				SSL_do_handshake(mySSL);
+			   
+			} while(pending && SSL_renegotiate_pending(mySSL) && timeout > 0);
+		   
+			SSL_SESSION *newSession = SSL_get_session(mySSL);
+			printf("session compare %d\n", SSL_SESSION_cmp(session, newSession));
+			if (!newSession)  {
+				printf("session B \n");
+				SSL_SESSION_print(out, session);
+
+			}
+
+			printf("timeout %d\n", timeout);
+			if (timeout <= 0)
+			{
+				printf("ERROR in refreshing keys\n");
+			}
+		}
+		// read from and write to server.
+	}
+}

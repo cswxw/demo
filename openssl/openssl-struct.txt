@@ -1,0 +1,128 @@
+#define SSL3_TXT_RSA_RC4_40_MD5 		"EXP-RC4-MD5"
+#define SSL3_CK_RSA_RC4_40_MD5 			0x03000003
+/* Cipher 03 */
+{
+	1,   //int valid;
+	SSL3_TXT_RSA_RC4_40_MD5, // text name 
+	SSL3_CK_RSA_RC4_40_MD5,   //id, 4 bytes, first is version
+	SSL_kRSA|SSL_aRSA|SSL_RC4  |SSL_MD5 |SSL_SSLV3, //what ciphers are used   //密钥协商算法为RSA //签名认证算法为RSA //加密算法为RC4 //摘要算法为MD5
+	SSL_EXPORT|SSL_EXP40,    //strength and export flags                     
+	0,									//Extra flags
+	40,									//Number of bits really used
+	128,								//Number of bits for algorithm
+	SSL_ALL_CIPHERS,		//used for matching
+	SSL_ALL_STRENGTHS,	//also used for matching
+	},
+
+/* used to hold info on the particular ciphers used */
+typedef struct ssl_cipher_st
+	{
+	int valid;
+	const char *name;		/* text name */
+	unsigned long id;		/* id, 4 bytes, first is version */
+	unsigned long algorithms;	/* what ciphers are used */
+	unsigned long algo_strength;	/* strength and export flags */
+	unsigned long algorithm2;	/* Extra flags */
+	int strength_bits;		/* Number of bits really used */
+	int alg_bits;			/* Number of bits for algorithm */
+	unsigned long mask;		/* used for matching */
+	unsigned long mask_strength;	/* also used for matching */
+	} SSL_CIPHER;
+
+
+
+
+
+
+
+
+struct rsa_st
+	{
+	/* The first parameter is used to pickup errors where
+	 * this is passed instead of aEVP_PKEY, it is set to 0 */
+	int pad;
+	long version;
+	const RSA_METHOD *meth;     //可以重载的方法，所有的关于rsa的操作全部在这个meth里面
+	/* functional reference if 'meth' is ENGINE-provided */
+	ENGINE *engine;   //当前的engine，内部包含一个RSA_METHED，该methed可以将上面的meth重载
+	BIGNUM *n;    //模数              公钥为n 和e；私钥为n 和d
+	BIGNUM *e;    //公钥指数
+	BIGNUM *d;    //私钥指数
+	BIGNUM *p;    //最初的大素数
+	BIGNUM *q;    //最初的大素数
+	BIGNUM *dmp1; // e*dmp1 = 1(mod(p-1))
+	BIGNUM *dmq1; // e*dmq1 = 1(mod(q-1))
+	BIGNUM *iqmp; // q*iqmp = 1 (mod p )
+	/* be careful using this if the RSA structure is shared */
+	CRYPTO_EX_DATA ex_data;
+	int references;
+	int flags;
+
+	/* Used to cache montgomery values */
+	BN_MONT_CTX *_method_mod_n;
+	BN_MONT_CTX *_method_mod_p;
+	BN_MONT_CTX *_method_mod_q;
+
+	/* all BIGNUM values are actually in the following data, if it is not
+	 * NULL */
+	char *bignum_data;
+	BN_BLINDING *blinding;
+	BN_BLINDING *mt_blinding;
+	};
+	
+	
+RSA算法中de=1modφ(n)表示de与1关于φ(n)同余，也就是说1除以φ(n)的余数与1除以de的余数相同。
+　　例如：p=3,q=11,d=7;φ(n)=(p-1)(q-1);
+　　n=pq=3*11=33,
+　　φ(n)=(p-1)(q-1)=2*10=20
+　　由de=1modφ(n),
+　　7e=1mod20
+　　即7e 与1 关于20同余,即余数相同 ,而1除以20余数为1 ,
+　　则7e=20k+1 ,其中k为整数。比如k取1,则e=3。 
+
+
+struct rsa_meth_st {
+    char *name;
+    int (*rsa_pub_enc) (int flen, const unsigned char *from,
+                        unsigned char *to, RSA *rsa, int padding);
+    int (*rsa_pub_dec) (int flen, const unsigned char *from,
+                        unsigned char *to, RSA *rsa, int padding);
+    int (*rsa_priv_enc) (int flen, const unsigned char *from,
+                         unsigned char *to, RSA *rsa, int padding);
+    int (*rsa_priv_dec) (int flen, const unsigned char *from,
+                         unsigned char *to, RSA *rsa, int padding);
+    /* Can be null */
+    int (*rsa_mod_exp) (BIGNUM *r0, const BIGNUM *I, RSA *rsa, BN_CTX *ctx);
+    /* Can be null */
+    int (*bn_mod_exp) (BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
+                       const BIGNUM *m, BN_CTX *ctx, BN_MONT_CTX *m_ctx);
+    /* called at new */
+    int (*init) (RSA *rsa);
+    /* called at free */
+    int (*finish) (RSA *rsa);
+    /* RSA_METHOD_FLAG_* things */
+    int flags;
+    /* may be needed! */
+    char *app_data;
+    /*
+     * New sign and verify functions: some libraries don't allow arbitrary
+     * data to be signed/verified: this allows them to be used. Note: for
+     * this to work the RSA_public_decrypt() and RSA_private_encrypt() should
+     * *NOT* be used RSA_sign(), RSA_verify() should be used instead.
+     */
+    int (*rsa_sign) (int type,
+                     const unsigned char *m, unsigned int m_length,
+                     unsigned char *sigret, unsigned int *siglen,
+                     const RSA *rsa);
+    int (*rsa_verify) (int dtype, const unsigned char *m,
+                       unsigned int m_length, const unsigned char *sigbuf,
+                       unsigned int siglen, const RSA *rsa);
+    /*
+     * If this callback is NULL, the builtin software RSA key-gen will be
+     * used. This is for behavioural compatibility whilst the code gets
+     * rewired, but one day it would be nice to assume there are no such
+     * things as "builtin software" implementations.
+     */
+    int (*rsa_keygen) (RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
+};
+

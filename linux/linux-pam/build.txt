@@ -1,0 +1,20 @@
+linux-pam 1.1.8 编译:
+	
+	https://github.com/linux-pam/linux-pam/archive/Linux-PAM-1_1_8.tar.gz
+
+安装:
+	yum install asciidoc xmlto docbook docbook-xsl
+
+编译:
+	maybe:
+		export ENABLE_REGENERATE_MAN=1
+	修改 configure.in
+		AM_CONDITIONAL(ENABLE_REGENERATE_MAN, test x$enable_docu != xno)
+		为
+		AM_CONDITIONAL(ENABLE_REGENERATE_MAN, test x$enable_docu != xyes)
+	./autogen.sh
+	
+	 make
+	 
+	 
+

@@ -1,0 +1,13 @@
+
+VERSION_1.1{
+	global:
+	add;
+	local:
+	*;
+};
+VERSION_1.2{
+	global:
+	add;
+	local:
+	*;
+}VERSION_1.1;

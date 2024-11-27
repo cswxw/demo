@@ -1,0 +1,72 @@
+
+引用自 https://bbs.pediy.com/thread-209014.htm       
+	   
+	   其实我接触iOS逆向工程并不久。从去年年初的时候，才开始接触到iOS语言，然后做一些iOS安全保护相关的工作，自己也慢慢接触iOS逆向工程这方面的东西，所以加起来也就1年的时间吧，下面就来谈谈我自己的一个学习过程。
+逆向工程
+       逆向工程是一种产品设计技术再现的过程，对某一目标产品进行静态或动态分析研究，从而演绎得出该产品的处理流程，功能结构以及技术构成等设计要素，然后把分析出来的技术用于自己的产品。
+        逆向分析的作用：
+        ①：缩短开发周期
+        ②：降低开发成本
+        ③：寻找技术突破
+语言入门
+       如果你要逆向分析iOS应用相关的东西，当然你得熟悉Object-C这门语言，不要求对开发了解的多么深入，但是首先得能理解它的语法，看懂Object-C的代码，并能够自己用这门语言写一些简单的应用及功能模块。
+       这方面的话，看书或者看视频都可以，我当时就是在极客学院看的Object-C基础开发的视频，学了一个星期左右吧。很重要的一点就是你在看的时候不能只是看，必须边看边实践，一定要把代码写出来。
+       最能写一个tableview，从网络请求数据然后显示到界面，也就差不多了。
+熟悉工具
+       逆向工程往往需要借助一些工具，首先需要准备一台越狱的机器，能够熟练使用以下工具：
+        ①openSSH：登录越狱机器，进行文件传输等等。
+        ②Cycript：运行一些动态js脚本。
+        ③lldb：动态调试应用，查看运行时变量的值。
+        ④class-dump： 导出应用头文件，查看应用类和成员信息。
+        ⑤Keychain dumper：导出越狱设备的keychain。
+        ⑥Snoop-it，introspy：动态追踪分析工具。
+        ⑦Hopper，IDA：静态反汇编分析工具。
+        ⑧theos：开发tweak，进行动态hook。
+       上面说的都可以在我的博客里面找到这些工具的使用方法，总之，一定要实践，一定要实践，一定要实践！(重要的事说三遍)
+        推荐《iOS应用逆向工程》这本书，作者拥有多年逆向开发实践经验，可以跟着里面讲的知识慢慢学习。
+继续深入
+文件结构
+       再深入一些的话，需要熟悉macho文件结构，包括它的构成，每一部分的作用，以及动态加载过程，然后可以进一步看看class-dump的源码。
+深入原理
+       使用工具，决不能只停留在工具的表面，一定要知道工具内部是怎么实现的，它的原理的是什么，自己是不是可以对它进行改进等等，比如theos的原理，Method Swizzling，fishhook等等。
+知己知彼
+       再说到逆向分析其实就是一个“攻”的过程，那么肯定不是一帆风顺的，有攻就有防，现在很多应用对于防止被逆向分析也做了很多不同的措施比如：反注入，反调试，反反汇编这些。作为一个逆向分析者，同时也需要对防的过程和可能使用的方法有一定的了解，才能更好的去寻找突破口。
+熟悉汇编
+       静态分析中难免需要去阅读汇编代码，知道各种寄存器的作用，以及对堆栈的操作过程。
+
+后续建议
+     ① 多关注一些github开源项目，包括上面说的那些
+     ② 多关注国内国外博客论坛
+     ③ 多实践，看再多的东西，都要实践出来
+
+下面是我博客的部分笔记：
+iOS安全–安装OpenSSH：http://www.blogfshare.com/ioss-openssh.html
+iOS安全–用class-dump-z导出IOS应用类信息：http://www.blogfshare.com/ioss-class-dump-z.html
+iOS安全–使用Cycript进行运行时分析：http://www.blogfshare.com/ioss-cycript.html
+iOS安全–导出Keychain中的数据：http://www.blogfshare.com/ioss-keychaindumper.html
+iOS安全–使用Snoop-it分析iOS应用：http://www.blogfshare.com/ioss-snoop-it.html
+iOS安全–使用introspy追踪IOS应用：http://www.blogfshare.com/ioss-introspy.html
+iOS安全–使用lldb对应用进行运行时分析：http://www.blogfshare.com/ioss-lldb.html
+iOS安全–了解Mach-o文件结构：http://www.blogfshare.com/ioss-mach-o.html
+iOS安全–从Mach-o文件结构分析类名和方法名：http://www.blogfshare.com/ioss-mach-o-dump.html
+iOS安全–使用Hopper修改程序逻辑跳过验证：http://www.blogfshare.com/ioss-hopper.html
+iOS安全–使用Theos开发Tweak过验证：http://www.blogfshare.com/ioss-theos-tweak.html
+iOS安全–使用Logify跟踪函数调用: http://www.blogfshare.com/ioss-theos-logify.html
+iOS安全–移除IOS应用的ASLR特性: http://www.blogfshare.com/ioss-remove-aslr.html
+iOS安全–使用iOSOpenDev进行越狱开发: http://www.blogfshare.com/iosopendev.html
+iOS安全–阿里比赛iOS 1. 2 题解: http://www.blogfshare.com/ali-ios-game.html
+iOS安全—阻止tweak注入hook api: http://www.blogfshare.com/block-code-inject.html
+iOS安全–可执行文件dylib注入，无需越狱: http://www.blogfshare.com/inject-with-njb.html
+iOS安全—dumpdecrypted APP砸壳: http://www.blogfshare.com/dumpdecrypted-app.html
+iOS安全–XX助手网络协议分析: http://www.blogfshare.com/pphelper-analyze.html
+iOS安全–在非越狱平台进行越狱开发（附分析流程）:http://www.blogfshare.com/wechat-openredenvelopes.html
+iOS安全–看了这个，你还敢用分身版微信吗？:http://www.blogfshare.com/the-second-wechat.html
+
+微信文章：http://mp.weixin.qq.com/mp/getmasssendmsg?__biz=MzI5MDIwNjc5Mw==#wechat_webview_type=1&wechat_redirect
+
+微信公众号：blogfshare
+更新文章：
+摇骰子作弊
+微信运动修改步数
+
+

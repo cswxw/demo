@@ -1,0 +1,37 @@
+00259A70   $ 55                                PUSH EBP
+00259A71   . 8BEC                              MOV EBP,ESP
+00259A73   . 0FB605 B7F73600                   MOVZX EAX,BYTE PTR DS:[36F7B7]
+00259A7A   . 85C0                              TEST EAX,EAX
+00259A7C   . EB 1F                             JMP SHORT SQLAPITe.00259A9D
+00259A7E   . 6A 00                             PUSH 0                                   ; /Style = MB_OK|MB_APPLMODAL
+00259A80   . 8B0D 3CE03600                     MOV ECX,DWORD PTR DS:[?sTrialCaption@@3P>; |SQLAPITe.00313E48
+00259A86   . 51                                PUSH ECX                                 ; |Title => "SQLAPI++ Registration Reminder"
+00259A87   . 8B15 38E03600                     MOV EDX,DWORD PTR DS:[?sTrialText@@3PBDB>; |SQLAPITe.00313D28
+00259A8D   . 52                                PUSH EDX                                 ; |Text => "Thank you for trying SQLAPI++ Library.
+
+
+00259A8E   . 6A 00                             PUSH 0                                   ; |hOwner = NULL
+00259A90   . FF15 24213700                     CALL DWORD PTR DS:[<&USER32.MessageBoxA>>; \MessageBoxA
+00259A96   . C605 B7F73600 01                  MOV BYTE PTR DS:[36F7B7],1
+
+
+
+
+00259A70   $ 55                                PUSH EBP
+00259A71   . 8BEC                              MOV EBP,ESP
+00259A73   . 0FB605 B7F73600                   MOVZX EAX,BYTE PTR DS:[36F7B7]
+00259A7A   . 85C0                              TEST EAX,EAX
+00259A7C     75 1F                             JNZ SHORT SQLAPITe.00259A9D
+00259A7E   . 6A 00                             PUSH 0                                   ; /Style = MB_OK|MB_APPLMODAL
+00259A80   . 8B0D 3CE03600                     MOV ECX,DWORD PTR DS:[?sTrialCaption@@3P>; |SQLAPITe.00313E48
+00259A86   . 51                                PUSH ECX                                 ; |Title => "SQLAPI++ Registration Reminder"
+00259A87   . 8B15 38E03600                     MOV EDX,DWORD PTR DS:[?sTrialText@@3PBDB>; |SQLAPITe.00313D28
+00259A8D   . 52                                PUSH EDX                                 ; |Text => "Thank you for trying SQLAPI++ Library.
+
+For help on"...
+00259A8E   . 6A 00                             PUSH 0                                   ; |hOwner = NULL
+00259A90   . FF15 24213700                     CALL DWORD PTR DS:[<&USER32.MessageBoxA>>; \MessageBoxA
+00259A96   . C605 B7F73600 01                  MOV BYTE PTR DS:[36F7B7],1
+00259A9D   > 5D                                POP EBP
+00259A9E   . C3                                RETN
+

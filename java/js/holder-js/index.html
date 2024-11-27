@@ -1,0 +1,29 @@
+<html>
+<script src="holder.min.js"></script>
+<body>
+<!--
+控制占位图片尺寸
+	holder.js中的图片尺寸，默认单位是像素。
+	百分比作单位  holder.js中百分比要写p，而不是%
+调整颜色
+	holder.js生成的占位图片默认是浅灰色配色，配色可以通过theme参数修改：
+	holder.js共定义了6种占位图片配色，分别是：sky、vine、lava、gray、industiral、social。
+	如果内置的配色方案不满足你的需要的话，还能自己定义配色。可以配置项有限，但基本上能满足需要：
+		Holder.addTheme("dark", {
+		  bg: "#000", // 背景色
+		  fg: "#aaa", // 前景色（字符颜色）
+		  size: 11, // 字符大小
+		  font: "Monaco", // 字体
+		  fontweight: "normal" // 字符粗细
+		});
+调整文字
+	占位图片的正中默认显示该图片的尺寸，可以通过text参数修改成任意文字。如果需要换行，就在换行处输入\n，注意\n的两边各需要一个空格：
+-->
+<img src="holder.js/300x200">
+
+<img src="holder.js/300x200?auto=yes&theme=vine">
+<img src="holder.js/100px200"`>
+
+<img src="holder.js/300x200?text=此处请放一张绿色的图片 \n 最好有边框">
+</body>
+</html>

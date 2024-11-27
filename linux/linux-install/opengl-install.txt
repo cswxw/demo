@@ -1,0 +1,4 @@
+代码需要装opengl相关的依赖：freeglut+libglew+libglew-dev
+	yum install freeglut libGLEW libglew-devel
+
+

@@ -1,0 +1,10 @@
+/**********************************************************************/
+thread:
+	thread apply all bt 查看所用线程堆栈信息
+
+源代码和对应汇编的关系
+	在gdb中运行set disassemble-next-line on，表示自动反汇编后面要执行的代码。
+
+取消分页:
+	set pagination off
+

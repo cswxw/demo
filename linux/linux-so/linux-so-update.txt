@@ -1,0 +1,189 @@
+linux共享库版本升级
+库原码:
+
+//旧库（有绑定指令）
+
+void foo_v1(int f) {        
+
+  printf("foo_v1\n");  
+
+}
+
+__asm__(".symver foo_v1,foo@@VERSION_1.0"); 
+
+ 
+
+//旧库（无绑定指令）
+
+void foo(int f) {
+
+     printf("foo_no\n");  //无绑定指令时，后边的调用就要和这里的函数名（foo）一致
+
+}
+
+ 
+
+//新库
+
+void foo_v1(int f) {
+
+     printf("-------here------------\n");
+
+}
+
+__asm__(".symver foo_v1,foo@VERSION_1.0");
+
+ 
+
+void foo_v2(int f) {
+
+     printf("foo_v2-yuanhao\n");
+
+}
+
+__asm__(".symver foo_v2,foo@@VERSION_1.1"); //”@@”是指默认函数,必须指定”
+
+说明：旧库(版本1.0)只有函数foo, 新库也只有函数foo,只是对foo进行升级,同时实现向前兼容.
+
+ 
+
+1. 编译旧库 (libfoo.so.1.0):
+
+libfoo.so.1.0 : foo.c
+
+gcc -shared -fPIC -o libfoo.so.1.0 -Wl,--soname='libfoo.so' -Wl,--version-script=1.ver foo.c
+
+1.ver内容:
+
+VERSION_1 {
+
+      global:  // global 被输出
+
+      foo; 
+
+       local:  //local 不被输出。它把一些数量的符号限定到本地范围，在共享库的外不可见
+
+        *;   //如果要升级的函数再local中则会显示“undefined reference to `foo'”
+
+};
+
+说明: 旧库编译后,库名称为libfoo.so.1.0, soname名称为: libfoo.so, export函数foo。
+
+有无绑定指令编译方式一致。
+
+2. 编译新库 (libfoo.so.1.1):
+
+libfoo.so.1.1 : foo.c
+
+gcc -Wall -shared -fPIC  -o libfoo.so.1.1 -Wl,--soname='libfoo.so' -Wl,--version-script=2.ver foo.c
+
+2.ver内容
+
+VERSION_1 {
+
+      global:
+
+        *;
+
+};
+
+VERSION_2 {
+
+      foo;
+
+} VERSION_1;
+
+说明: 新库编译后,库名称为libfoo.so.1.1, soname名称为: libfoo.so, 
+
+      export函数foo.
+
+注意：foo所在的类型须一致应同在global或者local。
+
+      爲了实现向前兼容应将共享库soname名设一致。
+
+3. 链接旧库 
+
+ln -sf libfoo.so.1.0  libfoo.so
+
+gcc -Wall -o v1 -lfoo -L. -Wl,-rpath=. main.c  //-lfoo 由于命名规则的约定，-l = -libfoo.so。
+
+说明：链接后输出可执行文件为v1（可以在黑色自己设定）。
+
+有无绑定指令，连接方式一致。
+
+4. 链接新库
+
+ln -sf libfoo.so.1.1  libfoo.so
+
+gcc -Wall -o v2 -lfoo -L. -Wl,-rpath=. main.c  //-lfoo 由于命名规则的约定，-l = -libfoo.so。
+
+ 说明：链接后输出可执行文件为v2（可以在红色自己设定）。
+
+5. 执行结果
+
+两库的main是一样的：
+
+Main.c
+
+#include <stdio.h>
+
+void foo(int);
+
+int main(void) {
+
+    foo(100);
+
+    return 0;
+
+}
+
+老版（有无绑定指令一致）结果为：
+
+新版的结果为：
+
+l 若将老版（有无绑定指令）的可执行文件在新编译的库中运行得到的结果是新库中与其结点一致的那个结果（向前兼容性）。
+
+l 由于老版中的foo绑定在VERSION_1.0上，所以新库中须有VERSION_1.0才能运行。
+
+l 若将新编译连接好的可执行文件v2移到就库下运行会因为旧库中缺少“VERSION_1.1”而无法执行。
+
+ 
+
+6. 备注：
+
+代码中一些重要的参数
+
+-share此选项将尽量使用动态库，所以生成文件比较小，但是需要系统有动态库。
+
+-fPIC 选项产生位置独立的代码。因为在编译的时候，装入内存的地址还不知道。如果不使用这个选项，库文件可能不会正确运行。
+
+-Wl选项告诉编译器将后面的参数传递给链接器。
+
+-soname则指定了动态库的soname，soname的关键功能是它提供了兼容性的标准：当要升级系统中的一个库时，并且新库的soname和老库的soname一样，用旧库链接生成的程序使用新库依然能正常运行。
+
+-Wl,--version-script=mapfile 告诉链接器哪些符号要从生成的共享库中输出出来。
+
+ln  -*（选项） 源文件 目标文件
+
+    -s或--symbolic 　对源文件建立符号连接，而非硬连接。
+
+    -f或--force 　强行建立文件或目录的连接，不论文件或目录是否存在。
+
+ 
+
+7. 辅助指令:
+
+nm -D libfoo.so.2可以查看执行文件或库文件的符号
+
+ 
+
+ 上图中0000062e是以16进制显示它的值，T是它的类型表示它位于代码区，foo_v1是他的名字
+
+从图中看出foo与foo_v1是同一个函数。A表示绝对值在以后的连接中不能改变。U该符号的定义在别的文件中。W尚未标明的弱符号。
+
+Readelf  --version-info libfoo.so.2可以查询结点之间的依赖关系
+
+从图可以看到VERSION_1.1依赖于VERSION_1.0。
+
+
+

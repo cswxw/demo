@@ -1,0 +1,37 @@
+[read]	
+	-p 由于read命令提供了-p参数，允许在read命令行中直接指定一个提示。
+	demo:
+		#!/bin/bash
+		read -p "Enter your name:" name
+		echo "hello $name, welcome to my program"
+		exit 0
+	-t选项指定一个计时器。
+	demo:
+		#!/bin/bash
+		if read -t 5 -p "please enter your name:" name
+		then
+			echo "hello $name ,welcome to my script"
+		else
+			echo "sorry,too slow"
+		fi
+		exit 0
+	-s 输入的数据不显示在监视器上
+	demo:
+		#!/bin/bash
+		read  -s  -p "Enter your password:" pass
+		echo "your password is $pass"
+		exit 0
+	读文件
+	demo:
+		#!/bin/bash
+		count=1    //赋值语句，不加空格
+		cat test | while read line        //cat 命令的输出作为read命令的输入,read读到的值放在line中
+		do
+		   echo "Line $count:$line"
+		   count=$[ $count + 1 ]          //注意中括号中的空格。
+		done
+		echo "finish"
+		exit 0
+
+
+

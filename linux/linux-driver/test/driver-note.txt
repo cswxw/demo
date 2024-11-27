@@ -1,0 +1,63 @@
+对于一个普通的linux设备驱动模块，以下是一个经典的makefile代码，使用下面这个makefile可以
+完成大部分驱动的编译，使用时只需要修改一下要编译生成的驱动名称即可。只需修改obj-m的值。
+
+
+ifneq ($(KERNELRELEASE),)
+obj-m:=hello.o
+else
+#generate the path
+CURRENT_PATH:=$(shell pwd)
+#the absolute path
+LINUX_KERNEL_PATH:=/lib/modules/$(shell uname -r)/build
+#complie object
+default:
+make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) modules
+clean:
+make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
+endif
+
+
+说明：
+当我们在模块的源代码目录下运行make时，make是怎么执行的呢？
+假设模块的源代码目录是/home/study/prog/mod/hello/下。
+先说明以下makefile中一些变量意义：
+（1）KERNELRELEASE在linux内核源代码中的顶层makefile中有定义
+（2）shell pwd会取得当前工作路径
+（3）shell uname -r会取得当前内核的版本号
+（4）LINUX_KERNEL_PATH变量便是当前内核的源代码目录。
+关于linux源码的目录有两个，分别为"/lib/modules/$(shell uname -r)/build"和"/usr/src/linux-header-$(shell uname -r)/"，
+但如果编译过内核就会知道，usr目录下那个源代码一般是我们自己下载后解压的，而lib目录下的则是在编译时自动copy过去的，
+两者的文件结构完全一样，因此有时也将内核源码目录设置成/usr/src/linux-header-$(shell uname -r)/。关于内核源码目录
+可以根据自己的存放位置进行修改。
+（5）make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) modules
+这就是编译模块了：首先改变目录到-C选项指定的位置（即内核源代码目录），其中保存有内核的顶层makefile；
+M=选项让该makefile在构造modules目标之前返回到模块源代码目录；然后，modueles目标指向obj-m变量中设定的模块；
+在上面的例子中，我们将该变量设置成了hello.o。
+
+
+
+按照顺序分析以下make的执行步骤：
+在模块的源代码目录下执行make，此时，宏“KERNELRELEASE”没有定义，因此进入else。
+由于make 后面没有目标，所以make会在Makefile中的第一个不是以.开头的目标作为默认的目标执行。
+于是default成为make的目标。
+make会执行 $(MAKE) -C $(KERNELDIR) M=$(PWD) modules ,假设当前内核版本是2.6.13-study,
+所以$(shell uname -r)的结果是 2.6.13-study ，这里实际运行的是
+make -C /lib/modules/2.6.13-study/build M=/home/study/prog/mod/hello/ modules
+
+
+-C 表示到存放内核的目录执行其makefile，在执行过程中会定义KERNELRELEASE，
+然后M=$(CURDIR)表示返回到当前目录，再次执行makefile，modules表示编译成模块的意思。
+而此时KERNELRELEASE已定义，则会执行obj-m += hello.o，表示会将hello_world.o目标编译成.ko模块。
+若有多个源文件，则采用如下方法：
+obj-m := hello.o
+hello-objs := file1.o file2.o file3.o
+关于make modules的更详细的过程可以在内核源码目录下的scripts/Makefile.modpost文件的注释 中找到。
+
+
+如果把hello模块移动到内核源代码中。例如放到/usr/src/linux/driver/中， KERNELRELEASE就有定义了。
+在/usr/src/linux/Makefile中有KERNELRELEASE=$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)$(LOCALVERSION)。
+
+这时候，hello模块也不再是单独用make编译，而是在内核中用make modules进行编译，此时驱动模块便和内核编译在一起
+
+
+

@@ -1,0 +1,18 @@
+
+因为要将一个系统从RHEL AS 3升级到CentOS 3，
+遇到了yum.conf配置中$releasever变量返回3AS的情况。暂时手工更改为3
+	rpm -q --qf %{version} redhat-release
+	//rpm -q --qf %{version} redhat-release-server
+	
+	then look in your yum.conf for what distroverpkg is set to.
+于是执行了一下上述命令，返回3AS
+然后再看yum.conf中distroverpkg的配置，发现为redhat-release，
+后来更新后其值变为centos-release。
+于是执行rpm -q --qf %{version} centos-release，返回信息为package centos-release is not installed。
+终于明白是少安装了一个程序包，所以返回Null。下载centos-release-3-9.1.i386.rpm，
+但是在安装时发现与redhat-release-3AS-7.3冲突。执行rpm -qa |grep redhat-release-3AS，
+卸载redhat-release-3AS-7.3，
+安装centos-release-3-9.1，再执行
+rpm -q --qf %{version} centos-release
+返回结果为3。
+

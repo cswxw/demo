@@ -1,0 +1,55 @@
+（1）临界区
+	   临界区是最简单的一种锁。基本的临界区操作有，
+        InitializeCriticalSection
+        EnterCriticalSection
+        LeaveCriticalSection
+        DeleteCriticalSection
+	对数据进行互斥操作的话
+		EnterCriticalSection(/*...*/)
+			do_something();
+		LeaveCriticalSection(/*...*/)
+		
+		
+（2）互斥锁
+	互斥锁也是一种锁。和临界区不同的是，它可以被不同进程使用，因为它有名字。
+	同时，获取锁和释放锁的线程必须是同一个线程。常用的互斥锁操作有
+        CreateMutex
+        OpenMutex
+        ReleaseMutex
+	用互斥锁进行数据的访问	
+		WaitForSingleObject(/*...*/);
+			do_something();
+		ReleaseMutex(/*...*/);
+		
+（3）信号量
+	互斥锁只能对单个资源进行保护，那么信号量可以对多个资源进行保护。
+	同时信号量在解锁的时候，可以被另外一个thread进行解锁操作。
+        CreateSemaphore
+        OpenSemaphore
+        ReleaseSemaphore
+		
+	关键是信号量在初始化的时候需要明确当前资源的数量和信号量的初始状态	
+        WaitForSingleObject(/*...*/);
+            do_something();
+        ReleaseSemaphore(/*...*/);
+		
+（4）event对象		
+		CreateEvent
+		OpenEvent
+		PulseEvent
+		ResetEvent
+		SetEvent
+	
+	对于main thread，应该这么做	
+		CreateEvent(/*...*/);
+		SetEvent(/*...*/);
+		WaitForMultiObjects(hThread, /*...*/);
+		CloseHandle(/*...*/);
+			
+	对于normal thread来说，操作比较简单，
+        while(1){
+            WaitForSingleObject(/*...*/);
+     
+            /*...*/
+        }
+

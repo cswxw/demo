@@ -1,0 +1,91 @@
+epoll的三大函数
+
+1.创建epoll fd函数
+
+	int epoll_create(int size);
+
+	epoll_create()创建一个epoll的事例，通知内核需要监听size个fd。size指的并不是最大的后备存储设备，而是衡量内核内部结构大小的一个提示。当创建成功后，会占用一个fd，所以记得在使用完之后调用close()，否则fd可能会被耗尽。
+
+	Note:自从Linux2.6.8版本以后，size值其实是没什么用的，不过要大于0，因为内核可以动态的分配大小，所以不需要size这个提示了。
+
+	创建还有另外一个函数
+
+	int epoll_create1(int flag);
+
+	这个函数是在linux 2.6.27中加入的，当你在看陈硕的muduo时可以看到这个函数，其实它和epoll_create差不多，不同的是epoll_create1函数的参数是flag，当flag是0时，表示和epoll_create函数完全一样，不需要size的提示了。
+
+	当flag = EPOLL_CLOEXEC，创建的epfd会设置FD_CLOEXEC
+
+	当flag = EPOLL_NONBLOCK，创建的epfd会设置为非阻塞
+
+	一般用法都是使用EPOLL_CLOEXEC.
+
+	Note:关于FD_CLOEXEC，现在网上好多都说的有点问题，我翻阅了一些资料，请教了一些人，大约明白它的意思了。
+
+	它是fd的一个标识说明，用来设置文件close-on-exec状态的。当close-on-exec状态为0时，调用exec时，fd不会被关闭；状态非零时则会被关闭，这样做可以防止fd泄露给执行exec后的进程。关于exec的用法，大家可以去自己查阅下，或者直接man exec。
+
+2.epoll事件的注册函数
+
+	int epoll_ctl(int epfd, int op, int fd, struct epoll_event* event);
+
+	select是在监听时告诉内核要监听的事件，而epoll_ctl是先注册需要监听的事件。
+
+	第一个参数epfd，为epoll_create返回的的epoll fd。
+
+	第二个参数op表示操作值。有三个操作类型，
+
+	EPOLL_CTL_ADD  // 注册目标fd到epfd中，同时关联内部event到fd上
+
+	EPOLL_CTL_MOD // 修改已经注册到fd的监听事件
+
+	EPOLL_CTL_DEL // 从epfd中删除/移除已注册的fd，event可以被忽略，也可以为NULL
+
+	第三个参数fd表示需要监听的fd。
+
+	第四个参数event表示需要监听的事件。
+
+	typedef union epoll_data {
+	void        *ptr;
+	int          fd;
+	uint32_t     u32;
+	uint64_t     u64;
+	} epoll_data_t;
+
+	struct epoll_event {
+	uint32_t     events;      /* Epoll events */
+	epoll_data_t data;        /* User data variable */
+	};
+
+	event参数是一个枚举的集合，可以用” | “来增加事件类型，枚举如下：
+
+	EPOLLIN:表示关联的fd可以进行读操作了。
+	EPOLLOUT:表示关联的fd可以进行写操作了。
+	EPOLLRDHUP(since Linux 2.6.17):表示套接字关闭了连接，或者关闭了正写一半的连接。
+	EPOLLPRI:表示关联的fd有紧急优先事件可以进行读操作了。
+	EPOLLERR:表示关联的fd发生了错误，epoll_wait会一直等待这个事件，所以一般没必要设置这个属性。
+	EPOLLHUP:表示关联的fd挂起了，epoll_wait会一直等待这个事件，所以一般没必要设置这个属性。
+	EPOLLET:设置关联的fd为ET的工作方式，epoll的默认工作方式是LT。
+	EPOLLONESHOT (since Linux 2.6.2):设置关联的fd为one-shot的工作方式。表示只监听一次事件，如果要再次监听，需要把socket放入到epoll队列中。
+
+3.epoll等待事件函数
+
+	int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+	int epoll_pwait(int epfd, struct epoll_event *events, int maxevents, int timeout,  const sigset_t *sigmask);
+
+	上面两个函数的参数含义：
+
+	第一个参数:表示epoll_wait等待epfd上的事件
+
+	第二个参数:events指针携带有epoll_data_t数据
+
+	第三个参数:maxevents告诉内核events有多大，该值必须大于0
+
+	第四个参数:timeout表示超时时间(单位：毫秒)
+
+	epoll_pwait(since linux 2.6.19)允许一个应用程序安全的等待，直到fd设备准备就绪，或者捕获到一个信号量。其中sigmask表示要捕获的信号量。
+
+	函数如果等待成功，则返回fd的数字；0表示等待fd超时，其他错误号请查看errno
+
+
+
+

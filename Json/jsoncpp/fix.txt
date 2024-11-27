@@ -1,0 +1,38 @@
+FastWrite 输出存在\u问题:
+	static inline bool isControlCharacter(char ch) { return ch > 0 && ch <= 0x1F; }
+	
+	json_write.cpp
+		static JSONCPP_STRING valueToQuotedStringN(const char* value, unsigned length) {
+	
+		default: {
+	#if 0
+    	  unsigned int cp = utf8ToCodepoint(c, end);
+      	// don't escape non-control characters
+      	// (short escape sequence are applied above)
+      	if (cp < 0x80 && cp >= 0x20)
+      	  result += static_cast<char>(cp);
+      	else if (cp < 0x10000) { // codepoint is in Basic Multilingual Plane
+      	  result += "\\u";
+      	  result += toHex16Bit(cp);
+      	} else { // codepoint is not in Basic Multilingual Plane
+      	         // convert to surrogate pair first
+      	  cp -= 0x10000;
+      	  result += "\\u";
+      	  result += toHex16Bit((cp >> 10) + 0xD800);
+      	  result += "\\u";
+      	  result += toHex16Bit((cp & 0x3FF) + 0xDC00);
+     	 }
+	#else
+      	if ((isControlCharacter(*c)) || (*c == 0)) {
+    	    JSONCPP_OSTRINGSTREAM oss;
+        	oss << "\\u" << std::hex << std::uppercase << std::setfill('0')
+            	<< std::setw(4) << static_cast<int>(*c);
+        	result += oss.str();
+      	} else {
+        	result += *c;
+     	 }
+	#endif
+    	} break;
+
+
+

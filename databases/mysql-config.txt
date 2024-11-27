@@ -1,0 +1,14 @@
+从机只读模式：
+	对于需要保证master-slave主从同步的salve库，如果要设置为只读状态，需要执行的命令为：
+		set global read_only=1;
+	read_only=1只读模式，可以限定普通用户进行数据修改的操作，但不会限定具有super权限的用户（如超级管理员root用户）的数据修改操作。
+
+	在MySQL中设置read_only=1后，普通的应用用户进行insert、update、delete等会产生数据变化的DML操作时，都会报出数据库处于只读模式不能发生数据变化的错误，
+
+	但具有super权限的用户，例如在本地或远程通过root用户登录到数据库，还是可以进行数据变化的DML操作；
+
+	为了确保所有用户，包括具有super权限的用户也不能进行读写操作，就需要执行给所有的表加读锁的命令 “flush tables with read lock;”。
+
+	这样使用具有super权限的用户登录数据库，想要发生数据变化的操作时，也会提示表被锁定不能修改的报错。
+
+	将slave数据库read-only=1设置只读后，在master执行GRANT USAGE ON *.* TO 'user01'@'localhost' IDENTIFIED BY'123456' WITH GRANT OPTION;创建一个普通用

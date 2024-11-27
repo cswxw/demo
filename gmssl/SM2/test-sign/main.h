@@ -1,0 +1,19 @@
+#ifndef _MAIN_H_
+#define _MAIN_H_
+
+#pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib,"Crypt32.lib")
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+#include <openssl/rand.h>
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/ebcdic.h>
+#include <openssl/ecdsa.h>
+#include <../crypto/include/internal/evp_int.h>
+#include <../crypto/ec/ec_lcl.h>
+#endif //_MAIN_H_

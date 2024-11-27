@@ -1,0 +1,8 @@
+
+获取父窗口指针：
+	CClientDlg *pPDlg = (CClientDlg*)AfxGetApp()->m_pMainWnd;   //转换类型
+获得状态栏与工具栏指针：
+	CStatusBar * pStatusBar=(CStatusBar *)AfxGetMainWnd()->GetDescendantWindow(AFX_IDW_STATUS_BAR);
+	CToolBar * pToolBar=(CtoolBar*)AfxGetMainWnd()->GetDescendantWindow(AFX_IDW_TOOLBAR);
+
+

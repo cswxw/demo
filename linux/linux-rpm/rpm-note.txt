@@ -1,0 +1,375 @@
+#### Linux 正常安装 rpm 的命令是： 
+	 rpm -ivh xxx.rpm
+#### 重复安装时需加属性：
+	 软件包重复安装将会失败，若仍需要安装必须加 --replacepkgs 属性 
+###  软件包的某个文件已在安装其他软件包时安装过，则安装将会失败，
+	 若仍需要安装必须加 --replacefiles 属性
+ 
+#### 解决依赖问题： 
+     加上 --nodeps 属性，不考虑依赖关系
+ 
+#### 强制安装： 
+     加上 --force 属性，强制进行安装
+
+
+
+源程序的命名规范：name-version.tar.{gz|bz2|xz}
+
+版本号：major.minor.release
+
+例：bash-4.3.1.tar.xz
+
+RPM包的命名规范：name-version-release.os.arch.rpm
+
+name：程序名称。
+
+version：程序版本号。
+
+release（发行号）：用于标识RPM包本身的发行号，与源程序的release号无关。
+
+os：即说明RPM包支持的操作系统版本。如el6（即rhel6）、centos6、el5、suse11。
+
+arch：主机平台。如i686、x86_64、amd64、ppc（power-pc）、noarch（即不依赖平台）
+
+例：bash-4.3.2-5.el6.x86_64.rpm
+
+
+
+
+
+我们来查看rpm-build的rpm包信息。如下：
+	cd /var/cache/yum/x86_64/6/updates/packages/
+	
+	注意：yum安装软件默认是安装完毕立即删除的，但是我们可以通过修改yum.conf文件使其不删除。
+	
+	cat /etc/yum.conf
+		keepcache=1
+
+
+
+	rpmdev-setuptree
+	or
+	mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+默认位置 	宏代码 	名称 	用途
+~/rpmbuild/SPECS 	%_specdir 	Spec 文件目录 	保存 RPM 包配置（.spec）文件
+~/rpmbuild/SOURCES 	%_sourcedir 	源代码目录 	保存源码包（如 .tar 包）和所有 patch 补丁
+~/rpmbuild/BUILD 	%_builddir 	构建目录 	源码包被解压至此，并在该目录的子目录完成编译
+~/rpmbuild/BUILDROOT 	%_buildrootdir 	最终安装目录 	保存 %install 阶段安装的文件
+~/rpmbuild/RPMS 	%_rpmdir 	标准 RPM 包目录 	生成/保存二进制 RPM 包
+~/rpmbuild/SRPMS 	%_srcrpmdir 	源代码 RPM 包目录 	生成/保存源码 RPM 包(SRPM)
+
+
+~/rpmbuild这个文件夹也是有宏代码的，叫做%_topdir
+
+修改 %_topdir :
+	vim ~/.rpmmacros
+	%_topdir  /root/myrpmbuild
+	wq!
+
+
+
+mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+或者rpmdev-setuptree
+
+rpm -qpl *.rpm
+rpm2cpio xxx.rpm | cpio -div
+
+在 Linux 操作系统下，几乎所有的软件均通过RPM 进行安装、卸载及管理等操作。RPM 的全称为Redhat Package Manager ，是由Redhat 公司提出的，用于管理Linux 下软件包的软件。Linux 安装时，除了几个核心模块以外，其余几乎所有的模块均通过RPM 完成安装。RPM 有五种操作模式，分别为：安装、卸载、升级、查询和验证。
+
+1）用RPM安装软件包，最简单的命令如下：
+
+1 #rpm -i example.rpm 安装 example.rpm 包；
+2 #rpm -iv example.rpm 安装 example.rpm 包并在安装过程中显示正在安装的文件信息；
+3 #rpm -ivh example.rpm 安装 example.rpm 包并在安装过程中显示正在安装的文件信息及安装进度
+
+
+2）删除已安装的软件包
+要卸载软件包example，只需输入以下这行命令：
+
+1 # rpm -e example
+
+注意：软件包名是example，而不是rpm文件名"example.rpm"。
+
+3）升级软件包
+升级软件类似于安装软件：
+
+1 # rpm -Uvh example.rpm
+
+用户要注意的是：rpm会自动卸载相应软件包的老版本。如果老版本软件的配置文件通新版本的不兼容，rpm会自动将其保存为另外一个文件，用户会看到下面的信息：
+
+saving /etc/example.conf as /etc/example.conf.rpmsave
+
+这样用户就可以自己手工去更改相应的配置文件。
+另外如果用户要安装老版本的软件，用户就会看到下面的出错信息：
+
+# rpm -Uvh example.rpm
+
+examle packag example-2.0-l(which is newer) is already installed
+
+error:example.rpm cannot be installed
+
+ 
+
+如果用户要强行安装就使用-oldpackage参数。
+
+4）查询软件包
+用户可以用rpm -q在rpm的数据库中查询相应的软件，rpm会给出软件包的名称，版本，发布版本号，例如：
+
+1 # rpm -q example
+
+下面是查询时可以使用的特定参数：
+-a 　　：查询目前系统安装的所有软件包。
+-f 文件名 　　：查询包括该文件的软件包。
+-F 　　：同-f参数，只是输入是标准输入（例如 find /usr/bin | rpm -qF)
+-q 软件包名 　　： 查询该软件包
+-Q 　　：同-p参数，只是输入是标准输入（例如 find /mnt/cdrom/RedHat/RPMS | rpm -qQ)
+下面是输出时的格式选择：
+-i 显示软件包的名称，描述，发行，大小，编译日期，安装日期，开发人员等信息。
+-l 显示软件包包含的文件
+-s 显示软件包包含的文件目前的状态，只有两种状态：normal和missing
+-d 显示软件包中的文档（如man,info,README等）
+-c 显示软件包中的配置文件，这些文件一般是安装后需要用户手工修改的，例如：sendmail.cf,passwd,inittab等
+如果用-v参数就可以得到类似于ls -l的输出
+
+5）用rpm校验软件包
+
+1 rpm -Vf 需要验证到包
+
+ 
+
+
+rpm 实用技巧！
+1）用户可以通过FTP来安装软件包。如果用户能够连上网络，想安装某个新的软件包时，可以直接用它的URL地址来安装：
+比如：现在在ftp.linuxsir.com/pub/linux/redhat/RPMS/下有这个文件包：foo-1.0-1.i386.rpm，那就可以用这样的命令：
+
+1 # rpm -i ftp.linuxsir.com/pub/linux/redhat/RPMS/foo-1.0-1.i386.rpm 
+
+ 
+
+来安装，也可以查询！
+
+2）如果用户不小心误删了几个文件，但不确定到底是那些文件，想对整个系统进行校验，以了解哪些部分可能已经损坏，可以用：
+
+1 # rpm -Va 
+
+ 
+
+3）如果用户碰到一个人不出来的文件，想要知道它是属于那一个软件包的话，可以这样做：
+
+1 # rpm -qf /usr/X11R6/bin/xjewel 
+
+ 
+
+结果会得到以下信息：
+
+xjewel-1.6-1 
+
+
+4）如果用户得到一个新的RPM文件，却不清楚它的内容；或想了解某个文件包将会在系统里安装那些文件，可以这样做：
+
+1 # rpm -qpi koules-1.2-2.i386.rpm 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+一. rpmbuild介绍
+顾名思义创建rpm包，它是用来指示转换的源码不定编译成二进制文件的包，在centos下默认目录为/usr/src/redhat
+二.目录
+/usr/src/redhat
+--BUILD #编译之前，如解压包后存放的路径
+--BUILDROOT #编译后存放的路径
+--RPMS #打包完成后rpm包存放的路径
+--SOURCES #源包所放置的路径
+--SPECS #spec文档放置的路径
+--SPRMS #源码rpm包放置的路径
+注：一般我们都把源码打包成tar.gz格式然后存放于SOURCES路径下，而在SPECS路径下编写spec文档，通过命令打包后，默认会把打包后的rpm包放在RPMS下，而源码包会被放置在SRPMS下
+三. rpmbuild相关命令
+基本格式：rpmbuild [options] [spec文档|tarball包|源码包]
+1.  从spec文档建立有以下选项：
+-bp  #只执行spec的%pre 段(解开源码包并打补丁，即只做准备)
+-bc  #执行spec的%pre和%build 段(准备并编译)
+-bi  #执行spec中%pre，%build与%install(准备，编译并安装)
+-bl  #检查spec中的%file段(查看文件是否齐全)
+-ba  #建立源码与二进制包(常用)
+-bb  #只建立二进制包(常用)
+-bs  #只建立源码包
+2.  从tarball包建立，与spec类似
+-tp #对应-bp
+-tc #对应-bc
+-ti #对应-bi
+-ta #对应-ba
+-tb #对应-bb
+-ts #对应-bs
+3.  从源码包建立
+--rebuild  #建立二进制包，通-bb
+--recompile  #同-bi
+4.  其他的一些选项
+--buildroot=DIRECTORY   #确定以root目录建立包
+--clean  #完成打包后清除BUILD下的文件目录
+--nobuild  #不进行%build的阶段
+--nodeps  #不检查建立包时的关联文件
+--nodirtokens
+--rmsource  #完成打包后清除SOURCES
+--rmspec #完成打包后清除SPEC
+--short-cricuit
+--target=CPU-VENDOR-OS #确定包的最终使用平台
+四.  spec文档的编写
+
+Name: 软件包的名称，后面可使用%{name}的方式引用，具体命令需跟源包一致
+Summary: 软件包的内容概要
+Version: 软件的实际版本号，具体命令需跟源包一致
+Release: 发布序列号，具体命令需跟源包一致
+Group: 软件分组，建议使用标准分组
+-----------------------------------------
+软件包所属类别，具体类别有：
+Amusements/Games （娱乐/游戏）
+Amusements/Graphics（娱乐/图形）
+Applications/Archiving （应用/文档）
+Applications/Communications（应用/通讯）
+Applications/Databases （应用/数据库）
+Applications/Editors （应用/编辑器）
+Applications/Emulators （应用/仿真器）
+Applications/Engineering （应用/工程）
+Applications/File （应用/文件）
+Applications/Internet （应用/因特网）
+Applications/Multimedia（应用/多媒体）
+Applications/Productivity （应用/产品）
+Applications/Publishing（应用/印刷）
+Applications/System（应用/系统）
+Applications/Text （应用/文本）
+Development/Debuggers （开发/调试器）
+Development/Languages （开发/语言）
+Development/Libraries （开发/函数库）
+Development/System （开发/系统）
+Development/Tools （开发/工具）
+Documentation （文档）
+System Environment/Base（系统环境/基础）
+System Environment/Daemons （系统环境/守护）
+System Environment/Kernel （系统环境/内核）
+System Environment/Libraries （系统环境/函数库）
+System Environment/Shells （系统环境/接口）
+User Interface/Desktops（用户界面/桌面）
+User Interface/X （用户界面/X窗口）
+User Interface/X Hardware Support （用户界面/X硬件支持）
+----------------------------------------------------
+License: 软件授权方式，通常就是GPL
+Source: 源代码包，可以带多个用Source1、Source2等源，后面也可以用%{source1}、%{source2}引用
+BuildRoot: 这个是安装或编译时使用的“虚拟目录”，考虑到多用户的环境，一般定义为：
+%{_tmppath}/%{name}-%{version}-%{release}-root
+或
+%{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n}
+该参数非常重要，因为在生成rpm的过程中，执行make install时就会把软件安装到上述的路径中，在打包的时候，同样依赖“虚拟目录”为“根目录”进行操作。
+后面可使用$RPM_BUILD_ROOT 方式引用。
+URL: 软件的主页
+Vendor: 发行商或打包组织的信息，例如RedFlag Co,Ltd
+Disstribution: 发行版标识
+Patch: 补丁源码，可使用Patch1、Patch2等标识多个补丁，使用%patch0或%{patch0}引用
+Prefix: %{_prefix} 这个主要是为了解决今后安装rpm包时，并不一定把软件安装到rpm中打包的目录的情况。这样，必须在这里定义该标识，并在编写%install脚本的时候引用，才能实现rpm安装时重新指定位置的功能
+Prefix: %{_sysconfdir} 这个原因和上面的一样，但由于%{_prefix}指/usr，而对于其他的文件，例如/etc下的配置文件，则需要用%{_sysconfdir}标识
+Build Arch: 指编译的目标处理器架构，noarch标识不指定，但通常都是以/usr/lib/rpm/marcros中的内容为默认值
+Requires: 该rpm包所依赖的软件包名称，可以用>=或<=表示大于或小于某一特定版本，例如：
+libpng-devel >= 1.0.20 zlib
+※“>=”号两边需用空格隔开，而不同软件名称也用空格分开
+还有例如PreReq、Requires(pre)、Requires(post)、Requires(preun)、Requires(postun)、BuildRequires等都是针对不同阶段的依赖指定
+Provides: 指明本软件一些特定的功能，以便其他rpm识别
+Packager: 打包者的信息
+�scription 软件的详细说明
+#spec脚本主体
+spec脚本的主体中也包括了很多关键字和描述，下面会一一列举。我会把一些特别需要留意的地方标注出来。
+%prep 预处理脚本
+%setup -n %{name}-%{version} 把源码包解压并放好
+注：可根据你的源码的名字格式，来确认解压后名字的格式，否则可能导致install的时候找不到对应的目录
+通常是从/usr/src/redhat/SOURCES里的包解压到/usr/src/redhat/BUILD/%{name}-%{version}中。
+一般用%setup -c就可以了，但有两种情况：一就是同时编译多个源码包，二就是源码的tar包的名称与解压出来的目录不一致，此时，就需要使用-n参数指定一下了。
+%patch 打补丁
+通常补丁都会一起在源码tar.gz包中，或放到SOURCES目录下。一般参数为：
+%patch -p1 使用前面定义的Patch补丁进行，-p1是忽略patch的第一层目录
+%Patch2 -p1 -b xxx.patch 打上指定的补丁，-b是指生成备份文件
+
+◎补充一下
+%setup 不加任何选项，仅将软件包打开。
+%setup -n newdir 将软件包解压在newdir目录。
+%setup -c 解压缩之前先产生目录。
+%setup -b num 将第num个source文件解压缩。
+%setup -T 不使用default的解压缩操作。
+%setup -T -b 0 将第0个源代码文件解压缩。
+%setup -c -n newdir 指定目录名称newdir，并在此目录产生rpm套件。
+%patch 最简单的补丁方式，自动指定patch level。
+%patch 0 使用第0个补丁文件，相当于%patch ?p 0。
+%patch -s 不显示打补丁时的信息。
+%patch -T 将所有打补丁时产生的输出文件删除。
+
+%build 开始构建包
+在/usr/src/redhat/BUILD/%{name}-%{version}目录中进行make的工作 ，常见写法：
+make %{?_smp_mflags} OPTIMIZE="%{optflags}"
+都是一些优化参数，定义在/usr/lib/rpm/marcros中
+
+%install 开始把软件安装到虚拟的根目录中
+在/usr/src/redhat/BUILD/%{name}-%{version}目录中进行make install的操作。这个很重要，因为如果这里的路径不对的话，则下面%file中寻找文件的时候就会失败。 常见内容有：
+%makeinstall 这不是关键字，而是rpm定义的标准宏命令。也可以使用非标准写法：
+make DESTDIR=$RPM_BUILD_ROOT install
+或
+make prefix=$RPM_BUILD_ROOT install
+
+需要说明的是，这里的%install主要就是为了后面的%file服务的。所以，还可以使用常规的系统命令：
+
+install -d $RPM_BUILD_ROOT/ #建立目录
+cp -a * $RPM_BUILD_ROOT/
+
+%clean 清理临时文件
+通常内容为：
+引用
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf "$RPM_BUILD_ROOT"
+rm -rf $RPM_BUILD_DIR/%{name}-%{version}
+
+※注意区分$RPM_BUILD_ROOT和$RPM_BUILD_DIR：
+$RPM_BUILD_ROOT是指开头定义的BuildRoot，而$RPM_BUILD_DIR通常就是指/usr/src/redhat/BUILD，其中，前面的才是%file需要的。
+
+%pre rpm安装前执行的脚本
+
+%post rpm安装后执行的脚本
+
+%preun rpm卸载前执行的脚本
+
+%postun rpm卸载后执行的脚本
+
+%preun %postun 的区别是什么呢？
+前者在升级的时候会执行，后者在升级rpm包的时候不会执行
+
+%files 定义那些文件或目录会放入rpm中
+这里会在虚拟根目录下进行，千万不要写绝对路径，而应用宏或变量表示相对路径。如果描述为目录，表示目录中除%exclude外的所有文件。
+�fattr (-,root,root) 指定包装文件的属性，分别是(mode,owner,group)，-表示默认值，对文本文件是0644，可执行文件是0755
+
+%exclude 列出不想打包到rpm中的文件
+※小心，如果%exclude指定的文件不存在，也会出错的。
+%changelog 变更日志
+
+五. spec文档中常用的几个宏(变量)
+1. RPM_BUILD_DIR:    /usr/src/redhat/BUILD
+2. RPM_BUILD_ROOT:   /usr/src/redhat/BUILDROOT
+3. %{_sysconfdir}:   /etc
+4. %{_sbindir}：     /usr/sbin
+5. %{_bindir}:       /usr/bin
+6. %{_datadir}:      /usr/share
+7. %{_mandir}:       /usr/
+ 
+ 
+
+
+

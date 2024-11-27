@@ -1,0 +1,91 @@
+
+模块类型（module-type）—— 5项
+Auth 	账号的认证和授权，身份验证，如，用户名和密码
+Account 	与账号管理相关的非认证类的功能，账户有效性，如：用来限制/允许用户对某个服务的访问时间，当前有效的系统资源(最多可以有多少个用户)，限制用户的位置(例如：root用户只能从控制台登录)
+Password 	用户修改密码时密码复杂度检查机制等功能
+Session 	用户获取到服务之前或使用服务完成之后需要进行一些附加的操作，如：记录打开/关闭数据的信息，监视目录等
+-type 	表示因为缺失而不能加载的模块将不记录到系统日志,对于那些不总是安装在系统上的模块有用
+
+
+
+一、简单方式实现：一个关健词实现
+required 	一票否决，表示本模块必须返回成功才能通过认证，但是如果该模块返回失败，失败结果也不会立即通知用户，而是要等到同一type中的所有模块全部执行完毕再将失败结果返回给应用程序。即为必要条件
+requisite 	一票否决，该模块必须返回成功才能通过认证，但是一旦该模块返回失败，将不再执行同一type内的任何模块，而是直接将控制权返回给应用程序。是一个必要条件
+sufficient 	一票通过，表明本模块返回成功则通过身份认证的要求，不必再执行同一type内的其它模块，但如果本模块返回失败可忽略，即为充分条件
+optional 	表明本模块是可选的，它的成功与否不会对身份认证起关键作用，其返回值一般被忽略
+include 	调用其他的配置文件中定义的配置信息，相当于函数调用，把其他的文件调用于此
+
+
+
+二、复杂详细实现：使用一个或多个“status=action”
+[status1=action1 status2=action …]
+Status:检查结果的返回状态
+Action:采取行为ok，done，die，bad，ignore，reset
+ok 模块通过，继续检查
+done 模块通过，返回最后结果给应用
+bad 结果失败，继续检查
+die 结果失败，返回失败结果给应用
+ignore 结果忽略，不影响最后结果
+reset 忽略已经得到的结果
+
+
+
+/******************************************代码分析 start******************************************/
+pam_handlers.c
+	case PAM_T_AUTH:
+	handler_p = &the_handlers->authenticate;
+	sym = "pam_sm_authenticate";//调用pam_authenticate（）函数来验证当前用户。 用户通常需要输入密码或类似的身份验证令牌，具体取决于系统中配置的身份验证服务。 有问题的用户应该事先调用pam_start（）或pam_set_item（）来指定。
+	handler_p2 = &the_handlers->setcred;
+	sym2 = "pam_sm_setcred";  //pam_setcred（）函数用于建立，修改或删除用户凭据。 通常在用户通过身份验证之后以及在验证会话之后调用它。
+	break;
+    case PAM_T_SESS:
+	handler_p = &the_handlers->open_session;
+	sym = "pam_sm_open_session";
+	handler_p2 = &the_handlers->close_session;
+	sym2 = "pam_sm_close_session";
+	break;
+    case PAM_T_ACCT:
+	handler_p = &the_handlers->acct_mgmt;
+	sym = "pam_sm_acct_mgmt"; //调用pam_acct_mgmt（）函数以确定当前用户的帐户是否有效。 它会检查密码和帐户是否过期，并验证访问时间限制。 通常在使用pam_authenticate（3PAM）对用户进行身份验证后调用此函数。
+	break;
+    case PAM_T_PASS:
+	handler_p = &the_handlers->chauthtok;
+	sym = "pam_sm_chauthtok";
+	break;
+	
+
+pam_start(pam_start.c):	
+	
+	加载认证模块:
+		pam_handlers.c
+			_pam_init_handlers //解析/etc/pam.d/serviceName /etc/pam.d/other 根据类型获取函数入口
+		
+pam_authenticate(pam_auth.c):
+	_pam_dispatch -> _pam_dispatch_aux
+	1. 调用_pam_init_handlers 确认是否已加载all module and symbols
+	2. 判断pamh->handlers.conf.authenticate 函数地址是否正常，
+		异常则加载pamh->handlers.other.authenticate (pam_deny.so)执行返回失败函数
+	
+	pam_unix_auth.so
+		pam_sm_authenticate -> _unix_read_password -> pam_prompt -> pam_vprompt
+		-> 调用 pamh->pam_conversation->conv 回调接口 [misc_conv.c:273 : misc_conv 系统默认接口，提示输入密码]
+				/* The actual conversation structure itself */
+
+				struct pam_conv {
+					int (*conv)(int num_msg, const struct pam_message **msg,//是否调用取决于pam提供的6个需要实现接口
+						struct pam_response **resp, void *appdata_ptr);
+					void *appdata_ptr;
+				};
+
+		 
+				
+	
+		
+		
+
+/******************************************代码分析 end******************************************/
+
+
+
+
+

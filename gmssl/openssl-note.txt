@@ -1,0 +1,75 @@
+自签名的证书无法被吊销，CA签名的证书可以被吊销 能不能吊销证书的区别在于，如果你的私钥被黑客获取，如果证书不能被吊销，则黑客可以伪装成你与用户进行通信
+
+如果你的规划需要创建多个证书，那么使用私有CA的方法比较合适，因为只要给所有的客户端都安装了CA的证书，那么以该证书签名过的证书，客户端都是信任的，也就是安装一次就够了
+如果你直接用自签名证书，你需要给所有的客户端安装该证书才会被信任，如果你需要第二个证书，则还的挨个给所有的客户端安装证书2才会被信任。
+
+
+
+
+证书类型：
+x509的证书编码格式有两种
+1.PEM(Privacy-enhanced Electronic Mail) 是明文格式的  以 -----BEGIN CERTIFICATE-----开头，已-----END CERTIFICATE-----结尾，中间是经过base64编码的内容,apache需要的证书就是这类编码的证书 查看这类证书的信息的命令为 ：openssl x509 -noout -text -in server.pem
+其实PEM就是把DER的内容进行了一次base64编码
+2.DER 是二进制格式的证书   查看这类证书的信息的命令为 ：openssl x509 -noout -text -inform der -in server.der
+
+
+扩展名：
+.crt 证书文件 ，可以是DER（二进制）编码的，也可以是PEM（ ASCII (Base64) ）编码的 ，在类unix系统中比较常见 
+.cer 也是证书  常见于Windows系统  编码类型同样可以是DER或者PEM的，windows 下有工具可以转换crt到cer
+.csr 证书签名请求   一般是生成请求以后发送给CA，然后CA会给你签名并发回证书
+.key  一般公钥或者密钥都会用这种扩展名，可以是DER编码的或者是PEM编码的  查看DER编码的（公钥或者密钥）的文件的命令为 openssl rsa -inform DER  -noout -text -in  xxx.key  查看PEM编码的（公钥或者密钥）的文件的命令为 openssl rsa -inform PEM   -noout -text -in  xxx.key  
+.p12 证书  包含一个X509证书和一个被密码保护的私钥
+
+
+生成证书签名请求  用openssl  req
+给证书签名 用 openssl x509
+自签名证书的Issuer和Subject是一样的
+证书的三个作用   加密通信和身份验证（验证对方确实是对方声称的对象）和数据完整性（无法被修改，修改了会被知）
+
+
+一. 自签名证书：
+1.生成服务器私钥  openssl genrsa -des3 -out server.key 4096
+2.生成证书签名请求  openssl req -new -key server.key -out server.csr  这里要填一大堆东西 保证Common name跟你的域名或者IP相同
+3.对上一步生成的证书签名请求进行签名  openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt 
+4.生成无需密码的服务器私钥 ，如果私钥是有密码的，则每次启动web服务器都会要求你输入密码
+ openssl rsa -in server.key -out server.key.insecure
+mv server.key server.key.secure
+mv server.key.insecure server.key
+ 确保你的私钥的安全性  因为该证书无法被吊销  chmod 999  server.key.secure  server.key
+还有一个简单的方法一步创建私钥和自签名请求
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout apache.key -out apache.crt
+
+这里的apache.key为私钥  apache.crt为证书
+
+二.创建私有CA,然后用该CA给证书进行签名
+1.创建CA私钥  openssl genrsa -des3 -out ca.key 4096
+2.生成CA的自签名证书   openssl req -new -x509 -days 365 -key ca.key -out ca.crt   其实CA证书就是一个自签名证书
+3.生成服务端私钥  openssl genrsa -des3 -out server.key 4096
+4.需要签名的对象（服务端）生成证书签名请求  openssl req -new -key server.key -out server.csr 
+这里注意证书签名请求当中的Common Name必须区别与CA的证书里面的Common Name
+5.用步骤2创建的CA证书给步骤4生成的签名请求进行签名
+openssl x509 -req -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+三.查看信息
+ openssl rsa -noout -text -in server.key 查看私钥信息
+openssl req -noout -text -in server.csr 查看签名请求信息
+openssl rsa -noout -text -in ca.key   查看ca的私钥信息
+openssl x509 -noout -text -in ca.crt  查看证书信息
+openssl crl -text -in   xx.crl  查看一个证书吊销列表信息
+openssl x509 -purpose -in cacert.pem  查看一个证书的额外信息
+openssl rsa -in key.pem -pubout -out pubkey.pem 从一个私钥里面提取出公钥
+openssl rsa -noout -text -pubin -in apache.pub  查看一个公钥的信息
+openssl verify  -CAfile  指定CA文件路径    apache.crt  验证一个证书是否是某一个CA签发
+ openssl s_client -connect 192.168.20.51:443  模拟一个ssl客户端访问ssl服务器  如果服务端要求客户端提供证书  则在加上 -cert 和-key参数 比如 openssl s_client -connect 192.168.20.51:443 -cert client.crt  -key client.key 
+openssl pkcs12 -in path.p12 -out newfile.crt.pem -clcerts -nokeys  从p12文件里面提取证书openssl pkcs12 -in path.p12 -out newfile.key.pem -nocerts -nodes  从p12文件里面提取私钥
+现代浏览器检查一个证书是否仍然有效 两种方法 OCSP (Online Certificate Status Protocol，在线证书状态协议) 和crl （Certificate Revoke List ，证书吊销列表）
+
+可以试一下导出给京东或者淘宝签名的CA证书 并用openssl x509 -noout -text -in ca.crt 查看一下，就能看到这两类信息京东的证书是由GeoTrustSSL进行签名的，导出GeoTrustSSL CA的证书 然后查看该CA的信息其中有一段信息是这样
+                X509v3 CRL Distribution Points: 
+     
+                    Full Name:
+                      URI:http://g1.symcb.com/crls/gtglobal.crl
+     
+                Authority Information Access: 
+                    OCSP - URI:http://g2.symcb.com
+这里说明了它的证书吊销列表地址和OSCP协议地址

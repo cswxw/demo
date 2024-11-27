@@ -1,0 +1,69 @@
+日志的实现主要有以下三个函数：
+
+void openlog(const char *ident, int option, int facility); ---- 打开
+
+参数：
+1、ident ---- 传入一个信息，加载每条日志里面，这个参数就是可以由我们指定的进程名。
+2、option ---- 打开方式，一般以或（|）的方式指定多种打开方式
+
+     LOG_CONS:如果信息发送给syslogd时发生错误，直接将信息输出到终端
+     LOG_NDELAY立即打开与系统日志的连接（通常，在产生第一条日志信息的情况下才会打开与日记系统的连接）
+     LOG_NOWAIT在记录日志信息时，不等待可能的子进程的创建
+     LOG_ODELAY类似于LOG_NDELAY，日记系统在调用syslog函数时才创建
+     LOG_PERROR将信息写入日志的同时，也发送到标准错误输出
+     LOG_PID每条日志信息包括进程号
+
+3、facility ---- 指定写入的数据类型
+
+     LOG_AUTH——认证系统：login、su、getty等
+     LOG_AUTHPRIV——同LOG_AUTH，但只登录到所选择的单个用户可读的文件中
+     LOG_CRON——cron守护进程
+     LOG_DAEMON——其他系统守护进程，如routed
+     LOG_FTP——文件传输协议：ftpd、tftpd
+     LOG_KERN——内核产生的消息
+     LOG_LPR——系统打印机缓冲池：lpr、lpd
+     LOG_MAIL——电子邮件系统
+     LOG_NEWS——网络新闻系统
+     LOG_SYSLOG——由syslogd（8）产生的内部消息
+     LOG_USER——随机用户进程产生的消息
+     LOG_UUCP——UUCP子系统
+     LOG_LOCAL0~LOG_LOCAL7——为本地使用保留
+
+void syslog(int priority, const char *format,...);  --- 使用
+
+参数：
+priority ---- 指明日志信息的严重级别优先级类型，有以下几种选项：
+     LOG_EMERG——紧急情况
+     LOG_ALERT——应该被立即改正的问题，如系统数据库破坏
+     LOG_CRIT——重要情况，如硬盘错误
+     LOG_ERR——错误
+     LOG_WARNING——警告信息
+     LOG_NOTICE——不是错误情况，但是可能需要处理
+     LOG_INFO——情报信息
+     LOG_DEBUG——包含情报的信息，通常旨在调试一个程序时使用
+
+format---指定要写入的数据，示例如下：
+
+syslog(LOG_INFO, "%d, log info test...", count);
+
+void closelog(void);  ---- 关闭
+
+
+
+/var/log/dmesg 内核引导信息日志 
+/var/log/message 标准系统错误信息日志 
+/var/log/maillog 邮件系统信息日志 
+/var/log/cron 计划任务日志 
+/var/log/secure 安全信息日志
+
+
+
+
+
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+authpriv.*                                              /var/log/secure
+mail.*                                                  -/var/log/maillog
+cron.*                                                  /var/log/cron
+*.emerg                                                 *
+uucp,news.crit                                          /var/log/spooler
+

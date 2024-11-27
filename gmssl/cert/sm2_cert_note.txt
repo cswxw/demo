@@ -1,0 +1,15 @@
+生成sm2证书：
+	1、生成SM2私钥及证书请求
+		gmssl ecparam -genkey -name sm2p256v1 -text -out root.key
+		gmssl req -new -key root.key -out root.req
+		
+	2、用私钥对csr进行自签名,生成根证书(1.2.156.10197.501)	SM3WithSM2Encryption
+		gmssl x509 -req -days 3650 -sm3 -in root.req -signkey root.key -out root.crt
+		gmssl x509 -req -days 3650 -sm3 -in root.req -signkey root.key -out root2.crt -set_serial 01
+	
+生成二级证书
+		gmssl ecparam -genkey -name sm2p256v1 -text -out client01.key
+		gmssl req -new -key client01.key -out client01.csr
+		gmssl x509 -req -days 365 -sm3 -in client01.csr -CA root.crt -CAkey root.key -out client01.crt  //error
+		gmssl x509 -req -days 365 -sm3 -in client01.csr -CA root.crt -CAkey root.key -out client01-1.crt -set_serial 01
+

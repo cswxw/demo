@@ -1,0 +1,25 @@
+Centos7 yum:
+	首先备份源:
+
+	mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+
+	备份之前的源BASE，进入对应目录。
+
+	cd /etc/yum.repos.d/
+
+	下载163源
+
+	wget http://mirrors.163.com/.help/CentOS7-Base-163.repo
+
+	修改其文件名
+
+	mv CentOS7-Base-163.repo CentOS-Base.repo
+
+	刷新YUM的缓存状态：
+
+	yum clean all
+
+	yum makecache
+
+
+

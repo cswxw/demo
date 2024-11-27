@@ -1,0 +1,6 @@
+#if ( defined _WIN32 )
+	//window
+#elif ( defined __unix ) || ( defined _AIX ) || ( defined __linux__ ) || ( defined __hpux )
+	//unix
+#endif
+

@@ -1,0 +1,3 @@
+根据 server.key 和 server.crt 生成 pfx证书：
+openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt
+

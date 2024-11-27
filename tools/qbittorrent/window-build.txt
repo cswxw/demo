@@ -1,0 +1,23 @@
+qbittorrent-4.1.4
+	qt5.12
+		config.pri
+			追加
+				LIBS += Crypt32.lib
+				LIBS += iphlpapi.lib
+		
+		
+	boost-1_64   64位
+		vs2015
+		https://sourceforge.net/projects/boost/files/boost-binaries/1.64.0/boost_1_64_0-msvc-14.0-64.exe/download
+	libtorrent cmake编译 64位
+        https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_1_9/libtorrent-rasterbar-1.1.9.tar.gz
+		添加链接库 Crypt32.lib
+		
+	zlib     cmake编译 64位
+	openssl 64位
+		perl Configure VC-WIN64A no-asm no-shared --prefix=d:/openssl-install
+		nmake install
+		
+
+
+

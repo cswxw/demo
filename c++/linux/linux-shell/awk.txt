@@ -1,0 +1,2 @@
+批量修改文件名:
+	ls | awk '{system("mv " $0 " " substr($0,12))}'

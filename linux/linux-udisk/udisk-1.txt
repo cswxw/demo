@@ -1,0 +1,15 @@
+udisk 
+	org.freedesktop.UDisks
+	https://aur.archlinux.org/udisks.git
+	
+build:
+	yum install ...
+	makepkg    https://sources.archlinux.org/other/pacman/
+
+
+	libgudev 改为 libgudev1
+	yum install bsdtar-3.1.2-10.el7_2.x86_64
+
+	makepkg -i -d
+
+

@@ -1,0 +1,1062 @@
+ 
+ /*
+  *  Base64编解码
+  */
+  var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  //
+  function utf16to8(str) {
+    var out, i, len, c;
+    out = "";
+    len = str.length;
+    for(i = 0; i < len; i++) {
+      c = str.charCodeAt(i);
+      if ((c >= 0x0001) && (c <= 0x007F)) {
+        out += str.charAt(i);
+      } else if (c > 0x07FF) {
+        out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+        out += String.fromCharCode(0x80 | ((c >>  6) & 0x3F));
+        out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+      } else {
+        out += String.fromCharCode(0xC0 | ((c >>  6) & 0x1F));
+        out += String.fromCharCode(0x80 | ((c >>  0) & 0x3F));
+      }
+    }
+    return out;
+  }
+  function utf8to16(str) {
+    var out, i, len, c;
+    var char2, char3;
+    out = "";
+    len = str.length;
+    i = 0;
+    while(i < len) {
+      c = str.charCodeAt(i++);
+      switch(c >> 4) {
+        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+          // 0xxxxxxx
+          out += str.charAt(i-1);
+          break;
+        case 12: case 13:
+          // 110x xxxx   10xx xxxx
+          char2 = str.charCodeAt(i++);
+          out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+          break;
+        case 14:
+          // 1110 xxxx  10xx xxxx  10xx xxxx
+          char2 = str.charCodeAt(i++);
+          char3 = str.charCodeAt(i++);
+          out += String.fromCharCode(((c & 0x0F) << 12) |
+          ((char2 & 0x3F) << 6) |
+          ((char3 & 0x3F) << 0));
+          break;
+      }
+    }
+    return out;
+  }
+  //将Ansi编码的字符串进行Base64编码
+  function encode64(input) {
+  	input=utf16to8(input);
+  	var output = "";
+  	var chr1, chr2, chr3 = "";
+  	var enc1, enc2, enc3, enc4 = "";
+  	var i = 0;
+  	do {
+  		chr1 = input.charCodeAt(i++);
+  		chr2 = input.charCodeAt(i++);
+  		chr3 = input.charCodeAt(i++);
+  		enc1 = chr1 >> 2;
+  		enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+  		enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+  		enc4 = chr3 & 63;
+  		if (isNaN(chr2)) {
+  			enc3 = enc4 = 64;
+  		} else if (isNaN(chr3)) {
+  			enc4 = 64;
+  		}
+  		output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2)
+  				+ keyStr.charAt(enc3) + keyStr.charAt(enc4);
+  		chr1 = chr2 = chr3 = "";
+  		enc1 = enc2 = enc3 = enc4 = "";
+  	} while (i < input.length);
+  	return output;
+  }
+  //将Base64编码字符串转换成Ansi编码的字符串
+  function decode64(input) {
+  	var output = "";
+  	var chr1, chr2, chr3 = "";
+  	var enc1, enc2, enc3, enc4 = "";
+  	var i = 0;
+  	if (input.length % 4 != 0) {
+  		return "";
+  	}
+  	var base64test = /[^A-Za-z0-9\+\/\=]/g;
+  	if (base64test.exec(input)) {
+  		return "";
+  	}
+  	do {
+  		enc1 = keyStr.indexOf(input.charAt(i++));
+  		enc2 = keyStr.indexOf(input.charAt(i++));
+  		enc3 = keyStr.indexOf(input.charAt(i++));
+  		enc4 = keyStr.indexOf(input.charAt(i++));
+  		chr1 = (enc1 << 2) | (enc2 >> 4);
+  		chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+  		chr3 = ((enc3 & 3) << 6) | enc4;
+  		output = output + String.fromCharCode(chr1);
+  		if (enc3 != 64) {
+  			output += String.fromCharCode(chr2);
+  		}
+  		if (enc4 != 64) {
+  			output += String.fromCharCode(chr3);
+  		}
+  		chr1 = chr2 = chr3 = "";
+  		enc1 = enc2 = enc3 = enc4 = "";
+  	} while (i < input.length);
+
+  	output=utf8to16(output);
+  	return output;
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+ var Base64={
+		 _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+		 encode: function(a) {
+		        var b = "", c, d, e, f, g, h, i = 0;
+		        for (a = Base64._utf8_encode(a); i < a.length; ) {
+		            c = a.charCodeAt(i++);
+		            d = a.charCodeAt(i++);
+		            e = a.charCodeAt(i++);
+		            f = c >> 2;
+		            c = (c & 3) << 4 | d >> 4;
+		            g = (d & 15) << 2 | e >> 6;
+		            h = e & 63;
+		            if (isNaN(d))
+		                g = h = 64;
+		            else if (isNaN(e))
+		                h = 64;
+		            b = b + this._keyStr.charAt(f) + this._keyStr.charAt(c) + this._keyStr.charAt(g) + this._keyStr.charAt(h)
+		        }
+		        return b
+		    },decode: function(a) {
+		        var b = "", c, d, e, f, g, h = 0;
+		        for (a = a.replace(/[^A-Za-z0-9\+\/\=]/g, 
+		        ""); h < a.length; ) {
+		            c = this._keyStr.indexOf(a.charAt(h++));
+		            d = this._keyStr.indexOf(a.charAt(h++));
+		            f = this._keyStr.indexOf(a.charAt(h++));
+		            g = this._keyStr.indexOf(a.charAt(h++));
+		            c = c << 2 | d >> 4;
+		            d = (d & 15) << 4 | f >> 2;
+		            e = (f & 3) << 6 | g;
+		            b += String.fromCharCode(c);
+		            if (f != 64)
+		                b += String.fromCharCode(d);
+		            if (g != 64)
+		                b += String.fromCharCode(e)
+		        }
+		        return b = Base64._utf8_decode(b)
+		    },_utf8_encode: function(a) {
+		        a = a.replace(/\r\n/g, "\n");
+		        for (var b = "", c = 0; c < a.length; c++) {
+		            var d = a.charCodeAt(c);
+		            if (d < 128)
+		                b += String.fromCharCode(d);
+		            else {
+		                if (d > 127 && d < 2048)
+		                    b += 
+		                    String.fromCharCode(d >> 6 | 192);
+		                else {
+		                    b += String.fromCharCode(d >> 12 | 224);
+		                    b += String.fromCharCode(d >> 6 & 63 | 128)
+		                }
+		                b += String.fromCharCode(d & 63 | 128)
+		            }
+		        }
+		        return b
+		    },_utf8_decode: function(a) {
+		        for (var b = "", c = 0, d = c1 = c2 = 0; c < a.length; ) {
+		            d = a.charCodeAt(c);
+		            if (d < 128) {
+		                b += String.fromCharCode(d);
+		                c++
+		            } else if (d > 191 && d < 224) {
+		                c2 = a.charCodeAt(c + 1);
+		                b += String.fromCharCode((d & 31) << 6 | c2 & 63);
+		                c += 2
+		            } else {
+		                c2 = a.charCodeAt(c + 1);
+		                c3 = a.charCodeAt(c + 2);
+		                b += String.fromCharCode((d & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+		                c += 3
+		            }
+		        }
+		        return b
+		    }
+		 
+ };
+
+/**
+ * 必须jquery库的加载
+ */
+var IBEcc = {
+	/**
+	 * 读取ecc_key地址
+	 */
+	_webserviceKUrl : "http://127.0.0.1:8080/readcert?from=1&type=1",
+
+	/**
+	 * 读取文件地址
+	 */
+	_webserviceFUrl : "http://127.0.0.1:8080/readcert?from=2&type=1",
+
+	_webserviceRUrl : "http://127.0.0.1:8080/readcert?from=3&type=1",
+	
+	_rsaURL : "http://127.0.0.1:8080/sign",
+
+	
+	_dev_state:'11',
+	setWebKUrl : function(url) {
+		if (url != null) {
+			this._webserviceKUrl = url;
+		}
+	},
+
+	setWebFUrl : function(url) {
+		if (url != null) {
+			this._webserviceFUrl = url;
+		}
+	},
+	
+	apply_1 : function(name,msg){
+		var key = $("#"+name+"_posids").find('option:selected').attr("value");
+		var s;
+		switch (key) {
+		case '0':
+			s = msg.CN;
+			break;
+		case '1':
+			s = msg.O;															
+			break;
+		case '2':
+			s = msg.OU;
+			break;
+		case '3':
+			s = msg.Email;
+			break;
+		case '4':
+			s = msg.title;
+			break;
+		case '5':
+			s = msg.emailAddress;
+			break;
+		default:
+			s = null;
+			break;
+		}
+		if(name == 'telephonenumber'){
+			var pattern = /[^0-9a-zA-Z]/g;
+			if(pattern.exec(s)){
+				alert("联系电话:("+s+")\n只允许输入数字和26个英文字母！");
+				s = null;
+			}
+		}
+		$("input[name='"+name+"']").attr("value", s);
+	},
+
+	/**
+	 * 从usbkey加载程序
+	 */
+	checkUsbKeyCert : function(divCertID, divStatusID, weburl, webpublic, type) {
+		var UserKeyCheck = false;
+		try{
+			var rs = ocx.GetDevState(this._dev_state);
+		}catch(ERR)
+		{
+			alert("控件安装不正常");
+			throw new Error("控件安装不正常");
+		}
+		if(rs=="#0")
+		{
+			UserKeyCheck = true;
+		}else{
+			alert("请插入管理员KEY");
+			throw new Error("请插入管理员KEY");
+		}
+		var cert;
+		if(UserKeyCheck)
+		{
+			
+			rs=ocx.VerifyPinEx();
+			//rs = ocx.VerifyPin("123456");//验证口令
+			if(rs=="#0")
+			{
+
+				
+				cert = ocx.ReadCert(true);
+				if(cert.substr(0,2)!="#0")
+				{
+					alert("管理员KEY证书丢失。错误号:"+cert);
+					return;
+				}
+				
+				cert = cert.substr(2,cert.length-2);
+			}else{
+				alert("PIN码错误");             
+			}
+		}
+		
+		
+		try {
+			if (cert) {
+				$("#" + divCertID).val(cert);
+				certvalue =cert;
+				if (certvalue) {
+					$.ajax({
+								type : "POST",
+								url : weburl,
+								dataType : "json",
+								data : "certvalue="
+										+ encodeURIComponent(certvalue),
+								success : function(msg) {
+									if(type == 'add'){
+										IBEcc.apply_1("cn",msg);
+									}
+									
+									
+									IBEcc.apply_1("name",msg);
+									IBEcc.apply_1("trusdatao",msg);
+									IBEcc.apply_1("trusdataou",msg);
+									IBEcc.apply_1("mail",msg);
+									IBEcc.apply_1("telephonenumber",msg);
+									
+									
+									$('#userCertificate').html(certvalue);
+									$("#" + divStatusID).html(
+											'<img width="20px" height="20px" align="middle" src="'
+											+ webpublic
+											+ 'public/images/admin_img/cert.gif"> '
+											+ IBEcc.formCertString(msg));
+							},
+							error : function (XMLHttpRequest, textStatus, errorThrown) {
+								$("#" + divStatusID).html('<font color=red>('+textStatus+')解析证书错误，请换成der格式证书</font>');
+							}
+							});
+				}
+			} else {
+				alert("请确认插入key");
+			}
+		} catch (e) {
+			alert("请确认意源可信中间件的安装和usbkey是否插入！");
+		}
+		cert = null;
+	
+	},
+    formCertString:function(msg){
+    	var cert_fields=['C','CN','O','OU','EMAILADDRESS'];
+      
+    	var cert_str='';
+    	$.each(cert_fields,function(i,val){
+    		if(msg[val]){
+    			cert_str+=val+"="+msg[val]+",";
+    		}
+    	});
+    	if(cert_str!=''){
+    		cert_str=cert_str.substr(0,cert_str.length-1);
+    	}
+    		
+    	return cert_str;	
+    	
+    },
+	/**
+	 * 从本地证书文件读取
+	 */
+	formFileCert : function(divCertID, divStatusID, weburl, webpublic, type) {
+		$.getScript(
+						this._webserviceFUrl,
+						function() {
+							try {
+								if (cert.value) {
+									$("#" + divCertID).val(cert.value);
+									certvalue = cert.value;
+									if (certvalue) {
+										$.ajax({
+													type : "POST",
+													url : weburl,
+													dataType : "json",
+													data : "certvalue="
+															+ encodeURIComponent(certvalue),
+													success : function(msg) {
+															if(type == 1){
+																IBEcc.apply_1("cn",msg);
+																IBEcc.apply_1("name",msg);
+																IBEcc.apply_1("trusdatao",msg);
+																IBEcc.apply_1("trusdataou",msg);
+																IBEcc.apply_1("mail",msg);
+																IBEcc.apply_1("telephonenumber",msg);
+															}
+															//$('#userCertificate').html(certvalue);
+															$("#" + divStatusID).html(
+																	'<img width="20px" height="20px" align="middle" src="'
+																	+ webpublic
+																	+ 'public/images/admin_img/cert.gif"> '
+																	+ IBEcc.formCertString(msg));
+													},
+													error : function (XMLHttpRequest, textStatus, errorThrown) {
+														$("#" + divStatusID).html('<font color=red>('+textStatus+')解析证书错误，请换成der格式证书</font>');
+													}
+												});
+									}
+								} else {
+									alert("错误读取证书");
+								}
+							} catch (e) {
+								alert("请确认意源可信中间件的安装或证书是否正确！");
+							}
+							cert = null;
+						});
+	},
+
+	checkUsbRSAKeyCert : function(divCertID, divStatusID, weburl, webpublic, type) {
+		 var certobj=document.getElementById("certobj");
+			var cert=certobj.ReadCertFromKey(0);
+		
+			 if(!cert){
+		        	
+		        	alert("请插入管理员key或检查控件安装情况");
+		        	return;
+		        }
+			 
+			 
+		try {
+			if (cert) {
+				$("#" + divCertID).val(cert);
+				certvalue =cert;
+				if (certvalue) {
+					$.ajax({
+								type : "POST",
+								url : weburl,
+								dataType : "json",
+								data : "certvalue="
+										+ encodeURIComponent(certvalue),
+								success : function(msg) {
+									if(type == 'add'){
+										IBEcc.apply_1("cn",msg);
+									}
+									
+									
+									IBEcc.apply_1("name",msg);
+									IBEcc.apply_1("trusdatao",msg);
+									IBEcc.apply_1("trusdataou",msg);
+									IBEcc.apply_1("mail",msg);
+									IBEcc.apply_1("telephonenumber",msg);
+									
+									
+									//$('#userCertificate').html(certvalue);
+									$("#" + divStatusID).html(
+											'<img width="20px" height="20px" align="middle" src="'
+											+ webpublic
+											+ 'public/images/admin_img/cert.gif"> '
+											+ IBEcc.formCertString(msg));
+							},
+							error : function (XMLHttpRequest, textStatus, errorThrown) {
+								$("#" + divStatusID).html('<font color=red>('+textStatus+')解析证书错误，请换成der格式证书</font>');
+							}
+							});
+				}
+			} else {
+				alert("请确认插入key");
+			}
+		} catch (e) {
+			alert("请确认意源可信中间件的安装和usbkey是否插入！");
+		}
+		cert = null;
+	},
+
+	//检测UsbKey是否存在!
+	checkIsKey : function(gourl){
+		sub_lock("登录中，请稍后");
+		
+		$.getScript(
+				this._webserviceKUrl,
+				function() {
+					try {
+						if (cert.value) {
+							location.href = gourl;
+						} else {
+							alert("你没有正确插入usbkey，请重新插入usbkey");
+							sub_lock_close();
+						}
+					} catch (e) {
+						alert("请确认意源可信中间件的安装和usbkey是否插入！");
+						sub_lock_close();
+					}
+				});
+		
+		
+	},
+	makeSeal : function(certID,makerCertID, url,target) {
+		    mydialog('mydialog_1','签章状态','正在执行，稍等中...');
+		
+	    	var sealname=$("#"+target).attr('sealname');
+	    	var orgvalue=$("#"+target).attr('orgname');
+	    	var sealvalue = IBTrusSignActiveX.MakeSealToBufferEx(sealname,orgvalue);
+	    	
+	    	if(!sealvalue){
+	    		return;
+	    	}
+			var sealimgsha1;
+			$.post(url+"makeSealImgsha1", {
+				"sealimgsha1" : trim(sealvalue)
+			}, function(msg) {
+				sealimgsha1 = msg.sealimgsha1;
+				//alert(IBTrusSignActiveX.HashData(1, 'a'));
+				//return;
+				
+				var currentusercert=$("#currentusercert").val();
+				//alert("currentusercert:"+currentusercert);
+			    var f = IBTrusSignActiveX.MessageEncode(1,sealvalue);
+			    
+			//	alert("MessageEncode:"+f);
+			   var  b = IBTrusSignActiveX.DetectCertificate(currentusercert);
+			//	alert("DetectCertificate:"+b);
+			   var  sig = IBTrusSignActiveX.RSASign(0, b, f);
+			//	alert("RSASign:"+f);
+			  var hash= IBTrusSignActiveX.HashData(0, sealvalue);
+				try {
+					var makerSign =sig;// encodeURIComponent(signature.value);
+					$.post(url+"makeSignDo", {
+						"sealimg" : trim(sealvalue),
+						"certid" : trim(certID),
+						'makerCertID':trim(makerCertID),
+						"sealname" : trim(sealname),
+						"makerSign" : trim(makerSign),
+						"sealhash":sealimgsha1
+					}, function(data) {
+						// data.status;
+						if (data.status == 'y') {
+							alert("制章成功！");
+							//$("#mydialog_1").html('<center><font color=green>制章成功！</font></center>');
+							location.reload();
+						} else {
+							$("#mydialog_1").html('<center><font color=red>制章有问题！</font></center>');
+						}
+					}, "json");
+				} catch (e) {
+					$("#mydialog_1").html('<center><font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font></center>');
+					return;
+				}
+			
+				
+				
+			}, "json");
+			
+	
+			
+	},
+	auditSeal : function( maxcount,dowload,url, certsntoaudit, sealname, makercertsn,
+			SealOrgan,sealhash) {
+		
+		//后加的签章方法
+		//var base64_value = manageAuditMd5(url+"manageAuditMd5", sealname, SealOrgan);
+		
+		var logintype_1 = $("#" + dowload).attr("checked");
+		var logintype_2 =false;
+		
+		var pattern = /^[0-9]{1,20}$/;
+		if (maxcount) {
+			if (isNaN(maxcount)) {
+				alert('请输入数字！');
+				return ;
+			}
+		}
+		
+		if(maxcount&&maxcount>0){
+			logintype_2=true;
+		}
+		
+		var sealctrl = 0;
+		if (logintype_1 == true && logintype_2 == true) {
+			// alert('选择2个');
+			sealctrl = 3;
+		} else if (logintype_1 == true) {
+			// alert("1");
+			sealctrl = 2;
+		} else if (logintype_2 == true) {
+			// alert("2");
+			sealctrl = 1;
+		}
+
+		if (certsntoaudit == '' || makercertsn == '') {
+			alert('请选择印章者！');
+			return ;
+		}
+
+		mydialog('mydialog_1','签章状态','正在执行，稍等中...');
+		//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+				//function() {
+		
+		var currentusercert=$("#currentusercert").val();
+		//alert("currentusercert:"+currentusercert);
+	    var f = IBTrusSignActiveX.MessageEncode(1,sealhash);
+	    
+	//	alert("MessageEncode:"+f);
+	   var  b = IBTrusSignActiveX.DetectCertificate(currentusercert);
+	//	alert("DetectCertificate:"+b);
+	   var  sig = IBTrusSignActiveX.RSASign(0, b, f);
+	//	alert("RSASign:"+f);
+		
+					try {
+						var auditorSign =sig;// encodeURIComponent(signature.value);
+						$.post(url+"manageAuditSealDo", {
+							"sealCertSNToAudit" : certsntoaudit,
+							"sealName" : sealname,
+							"makerCertSN" : makercertsn,
+							"auditorSign" : auditorSign,
+							"sealCtrl" : sealctrl,
+							"sealMaxUseCount" : maxcount
+						}, function(data) {
+							// data.status;
+							if (data.status == 'y') {
+								 alert("审核印章成功！");
+								//$("#mydialog_1").html('<font color=green>审核印章成功！</font>');
+								 parent.location.reload();
+								 parent.closeDialog();
+							} else {
+								$("#mydialog_1").html('<font color=red>审核印章失败！</font>');
+							}
+						}, "json");
+					} catch (e) {
+						$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+						return;
+					}
+				//});
+	},
+	setSeal : function(maxcount,dowload, url, certsntoaudit, sealname, makercertsn,SealOrgan,sealhash) {
+		//后加的签章方法
+		//var base64_value = manageAuditMd5(url+"manageAuditMd5", sealname, SealOrgan);
+		var logintype_1 = $("#" + dowload).attr("checked");
+		var logintype_2 =false;
+		
+		var pattern = /^[0-9]{1,20}$/;
+		if (maxcount) {
+			if (isNaN(maxcount)) {
+				alert('请输入数字！');
+				return ;
+			}
+		}
+		
+		if(maxcount&&maxcount>0){
+			logintype_2=true;
+		}
+
+		var sealctrl = 0;
+		if (logintype_1 == true && logintype_2 == true) {
+			// alert('选择2个');
+			sealctrl = 3;
+		} else if (logintype_1 == true) {
+			// alert("1");
+			// 控制下载
+			sealctrl = 2;
+		} else if (logintype_2 == true) {
+			// alert("2");
+			// 控制次数
+			sealctrl = 1;
+		}
+		
+		var nsetmode = 0;
+		var setparam = 0;
+
+		mydialog('mydialog_1','签章状态','正在执行，稍等中...');
+		var currentusercert=$("#currentusercert").val();
+		//alert("currentusercert:"+currentusercert);
+	    var f = IBTrusSignActiveX.MessageEncode(1,sealhash);
+	    
+	//	alert("MessageEncode:"+f);
+	   var  b = IBTrusSignActiveX.DetectCertificate(currentusercert);
+	//	alert("DetectCertificate:"+b);
+	   var  auditorSign = IBTrusSignActiveX.RSASign(0, b, f);
+		switch (sealctrl) {
+		case 0:
+		//	$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+					//function() {
+						try {
+							var auditorSign ='';// encodeURIComponent(signature.value);
+							$.post(url+"manageSetSealDo", {
+								"sealCertSNToSet" : certsntoaudit,
+								"sealName" : sealname,
+								"makerCertSN" : makercertsn,
+								"setType" : 1,
+								"setParam" : 0,
+								"auditorSign" : auditorSign
+							}, function(data) {
+								if (data.status == 'y') {
+									 alert("审核印章成功！");
+									//$("#mydialog_1").html('<font color=green>审核印章成功！</font>');
+									 parent.location.reload();
+									 parent.closeDialog();
+								} else {
+									$("#mydialog_1").html('<font color=red>审核印章失败！</font>');
+								}
+							}, "json");
+						} catch (e) {
+							$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+							return;
+						}
+				//	});
+			break;
+		case 1:
+			//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+					//function() {
+						try {
+							var auditorSign ="";// encodeURIComponent(signature.value);
+							// 这里需要做2次，先设置在设置次数
+							$.post(url+"manageSetSealDo", {
+								"sealCertSNToSet" : certsntoaudit,
+								"sealName" : sealname,
+								"makerCertSN" : makercertsn,
+								"setType" : 1,
+								"setParam" : 1,
+								"auditorSign" : auditorSign
+							}, function(data) {
+								if (data.status == 'y') {
+									$.post(url+"manageSetSealDo", {
+										"sealCertSNToSet" : certsntoaudit,
+										"sealName" : sealname,
+										"makerCertSN" : makercertsn,
+										"setType" : 2,
+										"setParam" : maxcount,
+										"auditorSign" : auditorSign
+									}, function(data) {
+										if (data.status == 'y') {
+											 alert("设置印章成功！");
+											//$("#mydialog_1").html('<font color=green>审核印章成功！</font>');
+											 parent.location.reload();
+											 parent.closeDialog();
+										} else {
+											$("#mydialog_1").html('<font color=red>审核印章失败！</font>');
+										}
+									}, "json");
+								} else {
+									$("#mydialog_1").html('<font color=red>设置印章失败！</font>');
+								}
+							}, "json");
+						} catch (e) {
+							$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+							return;
+						}
+					//});
+
+			break;
+		case 2:
+			//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+					//function() {
+						try {
+							var auditorSign ="";//  encodeURIComponent(signature.value);
+							nsetmode = 1;
+							setparam = 2;
+							$.post(url+"manageSetSealDo", {
+								"sealCertSNToSet" : certsntoaudit,
+								"sealName" : sealname,
+								"makerCertSN" : makercertsn,
+								"setType" : nsetmode,
+								"setParam" : setparam,
+								"auditorSign" : auditorSign
+							}, function(data) {
+								if (data.status == 'y') {
+									 alert("设置印章成功！");
+									//$("#mydialog_1").html('<font color=green>审核印章成功！</font>');
+									 parent.location.reload();
+									 parent.closeDialog();
+								} else {
+									$("#mydialog_1").html('<font color=red>审核印章失败！</font>');
+								}
+							}, "json");
+						} catch (e) {
+							$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+							return;
+						}
+					//});
+			break;
+		case 3:
+			//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+					//function() {
+						try {
+							var auditorSign ="";//  encodeURIComponent(signature.value);
+							nsetmode = 1;
+							// 这里要做2次
+							setparam = 3;
+							// var setstatus1 = setSealOne(active_cert_sn, certsntoset,
+							// sealhash, active_cert_pem, sealname, makercertsn, nsetmode,
+							// setparam);
+							$.post(url+"manageSetSealDo", {
+								"sealCertSNToSet" : certsntoaudit,
+								"sealName" : sealname,
+								"makerCertSN" : makercertsn,
+								"setType" : nsetmode,
+								"setParam" : setparam,
+								"auditorSign" : auditorSign
+							}, function(data) {
+								if (data.status == 'y') {
+									// var setstatus = setSealOne(active_cert_sn, certsntoset,
+									// sealhash, active_cert_pem, sealname, makercertsn, 2,
+									// parseInt(sealmaxusecount));
+									$.post(url+"manageSetSealDo", {
+										"sealCertSNToSet" : certsntoaudit,
+										"sealName" : sealname,
+										"makerCertSN" : makercertsn,
+										"setType" : 2,
+										"setParam" : sealmaxusecount,
+										"auditorSign" : auditorSign
+									}, function(data) {
+										if (data.status == 'y') {
+											 alert("设置印章成功！");
+											//$("#mydialog_1").html('<font color=green>审核印章成功！</font>');
+											 parent.location.reload();
+											 parent.closeDialog();
+										} else {
+											$("#mydialog_1").html('<font color=red>审核印章失败！</font>');
+										}
+									}, "json");
+								} else {
+									$("#mydialog_1").html('<font color=red>设置印章失败！</font>');
+								}
+							}, "json");
+						} catch (e) {
+							$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+							return;
+						}
+					//});
+
+			break;
+		}
+	},
+	delSeal : function(url, sealCertSNToDel, makerCertID,sealName) {
+		var truthBeTold = window.confirm("你确定要废除（" + sealName + "）章吗？");
+		if (truthBeTold) {
+			if (sealCertSNToDel == null || sealName == null||makerCertID==null) {
+				alert('参数为空，废除失败！');
+				return;
+			}
+			$.post(url, {
+				"sealCertSNToDel" : trim(sealCertSNToDel),
+				"sealName" : trim(sealName),
+				"makerCertID":trim(makerCertID)
+			}, function(data) {
+				if (data.status == 'y') {
+					alert('操作成功');
+					if(parent&&parent.parentFrame){
+						 parent.location.reload();
+						 parent.closeDialog();
+					}else
+					{
+						location.reload();
+
+						
+					}
+				} else {
+					alert('操作失败');
+				}
+			}, "json");
+		}
+	},
+	stopSeal : function(url, sealCertSNToDel,  makerCertSN,sealName,SealOrgan) {
+		//后加的签章方法
+		//var base64_value = manageAuditMd5(url+"manageAuditMd5", sealName, SealOrgan);
+		var truthBeTold = window.confirm("你确定要停用（" + sealName + "）章吗？");
+		if(!truthBeTold){
+			return;
+		}
+		if (sealCertSNToDel == null || sealName == null || makerCertSN == null) {
+			alert('参数为空，停用失败！');
+			return;
+		}
+		mydialog('mydialog_1','签章状态','正在执行，稍等中...');
+		//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+				//function() {
+					try {
+						var auditorSign = "";// encodeURIComponent(signature.value);
+						$.post(url+"manageStopSealDo", {
+							"sealCertSNToSet" : trim(sealCertSNToDel),
+							"sealName" : trim(sealName),
+							"makerCertSN" : trim(makerCertSN),
+							"auditorSign" : trim(auditorSign)
+						}, function(data) {
+							if (data.status == 'y') {
+								alert("停用成功");
+								location.reload();
+							} else {
+								alert(data.info);
+							}
+						}, "json");
+					} catch (e) {
+						$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+						return;
+					}
+				//});
+	},
+	startSeal : function(url, sealCertSNToDel,  makerCertSN,sealName,SealOrgan) {
+		//后加的签章方法
+		//var base64_value = manageAuditMd5(url+"manageAuditMd5", sealName, SealOrgan);
+		if (sealCertSNToDel == null || sealName == null || makerCertSN == null) {
+			alert('参数为空，停用失败！');
+			return;
+		}
+		mydialog('mydialog_1','签章状态','正在执行，稍等中...');
+		//$.getScript(this._rsaURL+"?cert="+$("#currentusercert").val()+"&data="+base64_value,
+				//function() {
+					try {
+						var auditorSign = "";// encodeURIComponent(signature.value);
+						$.post(url+"manageStartSealDo", {
+							"sealCertSNToSet" : trim(sealCertSNToDel),
+							"sealName" : trim(sealName),
+							"makerCertSN" : trim(makerCertSN),
+							"auditorSign" : trim(auditorSign)
+						}, function(data) {
+							if (data.status == 'y') {
+								alert("启用成功");
+								location.reload();
+							} else {
+								alert(data.info);
+							}
+						}, "json");
+					} catch (e) {
+						$("#mydialog_1").html('<font color=red>签名失败，请确认意源可信中间件的安装和是否是正确的证书！</font>');
+						return;
+					}
+				//});
+	},
+    downloadSeal:function(sealname, sealorgname, sealowner, sealdatefrom, sealdateto, sealimg){
+    		  var active_cert_pem = $("#active_cert_pem").val();
+    		  //var active_cert_sn = getCertSn(1,active_cert_pem);
+    		  //var sealowner = removeALLStr($("#sealowner").val());
+    		  //
+    		  
+    		//  var   sealimg=IBTrusSignActiveX.GetSealImg('192.168.1.193', '8080', '1609', 'C51FFBE8A06ABBD980DB1978F0F0B505');
+    		  
+    			
+    		var active_cert_pem=$("#currentusercert").val();
+    		  
+    		 // alert(sealimg);
+    	    var status =  IBTrusSignActiveX.WriteSealToKey(0, 1, sealname, sealorgname, sealowner, sealdatefrom, sealdateto, active_cert_pem, sealimg);
+    	
+    	    
+    		  alert(status);
+    		 // var status = writeSealToKey(sealname, sealorgname, sealowner, sealdatefrom, sealdateto, active_cert_pem, sealcertsn, sealhash);
+    		 // if(status == 0)
+    		 // {
+    			//  alert("下载印章到key成功！");
+    			 // trusAuditInfo(encodeURI("个人印章"), encodeURI("("+sealname+")下载印章到key成功") ,encodeURI("1"));
+    		  //}else{
+    			//  trusAuditInfo(encodeURI("个人印章"), encodeURI("("+sealname+")下载印章到key失败") ,encodeURI("0"));
+    		// }
+    },
+     checkDetect:function(){
+    	
+ 	 	var active_cert_pem=$("#currentusercert").val();
+   	   var checkdetectstatus = IBTrusSignActiveX.DetectCertificate(active_cert_pem);
+   	 
+   	   //alert(checkdetectstatus);
+   		 //检测是否被换key
+   		   if(checkdetectstatus== '')
+   			{
+   		    	//$.messager.alert('Warning','The warning message');
+   			$( "#dialog" ).dialog(
+   			{
+   		      modal: true,
+   		        dialogClass: "no-close",
+   		        height:60
+   			});
+   			}else{
+   				
+   				
+   				$( "#dialog" ).dialog( "close" );
+   			}
+   	}
+
+};
+
+// 去左空格;
+function ltrim(s) {
+	return s.replace(/^\s*/, "");
+}
+// 去右空格;
+function rtrim(s) {
+	return s.replace(/\s*$/, "");
+}
+// 去左右空格;
+function trim(s) {
+	return rtrim(ltrim(s));
+}
+
+/**
+ * 基于jquery的函数
+ * @param title
+ * @param status
+ */
+function mydialog(divID,title,status,w,h){
+	if(!w) w = 300;
+	if(!h) h = 100;
+	if($('#'+divID).html() == null){
+		$('<div id="'+divID+'" style="display: none;" title="'+title+'">'+status+'</div>').appendTo("body");
+	}
+	$("#"+divID).dialog({
+		beforeclose: function() {
+			  location.reload();
+              //return false;
+        },
+        buttons: {
+            "确定": function(){$(this).dialog("close"); }
+        },
+		resizable: false,
+		height:h+50,
+		width:w,
+		modal: true
+	});
+}
+
+/**
+ * 基于jquery的函数
+ * 签名方法,返回值
+ * @param url
+ * @param SealOrgan
+ * @param sealName
+ * @returns imgmd5
+ */
+function manageAuditMd5(url,sealName,SealOrgan){
+	var base64_value;
+	$.ajax({
+		  type: "POST",
+		  url: url,
+		  data: "SealOrgan="+SealOrgan+"&SealName="+sealName,
+		  dataType: "json",
+		  async: false,
+		  success: function(msg){
+			  base64_value = msg.sealimgmd5;
+		  },
+		  error: function(){
+			  alert('签名故障');
+		  }
+	});
+	return base64_value;
+}

@@ -1,0 +1,32 @@
+gcc -E选项，表示让gcc只进行“预处理”就行了。 所谓的预处理，就是把程序中的宏展开， 把头文件的内容展开包含进来等等一些编译前的预处理操作。
+
+预处理结果会显示到屏幕上，如果需要保存，则得需要重定向。 
+
+
+
+
+ linux动态库与静态库混合连接
+
+一、在应用程序需要连接外部库的情况下，linux默认对库的连接是使用动态库，在找不到动态库的情况下再选择静态库。使用方式为：
+
+gcc test.cpp -L. -ltestlib
+
+如果当前目录有两个库libtestlib.so libtestlib.a 则肯定是连接libtestlib.so。如果要指定为连接静态库则使用：
+
+gcc test.cpp -L. -static -ltestlib
+
+使用静态库进行连接。
+
+ 
+
+二、当对动态库与静态库混合连接的时候，使用-static会导致所有的库都使用静态连接的方式。这时需要作用-Wl的方式：
+
+gcc test.cpp -L. -Wl,-Bstatic -ltestlib  -Wl,-Bdynamic -ltestlib 
+
+另外还要注意系统的运行库使用动态连接的方式，所以当动态库在静态库前面连接时，必须在命令行最后使用动态连接的命令才能正常连接
+
+，如：
+
+gcc test.cpp -L. -Wl,-Bdynamic -ltestlib -Wl,-Bstatic -ltestlib  -Wl,-Bdynamic 
+
+

@@ -1,0 +1,94 @@
+* OK [CAPABILITY IMAP4rev1 UIDPLUS CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT QUOTA IDLE ID STARTTLS] IMAP ready.
+1 ID ("name" "NeteaseMailMaster" "os" "Windows" "os-version" "10.0.17134" "support-url" "dashiteam@163.com" "vendor" "NetEase" "version" "4.6.1.1009")
+* ID ("name" "BossMail-IMAP")
+1 OK ID completed
+2 LOGIN "xxx@xxx.net.cn" "密码"
+2 OK LOGIN completed.
+3 CAPABILITY
+* CAPABILITY IMAP4rev1 UIDPLUS CHILDREN NAMESPACE THREAD=ORDEREDSUBJECT THREAD=REFERENCES SORT QUOTA IDLE ID
+3 OK CAPABILITY completed.
+4 NAMESPACE
+* NAMESPACE (("INBOX." ".")) NIL (("#shared." ".")("shared." "."))
+4 OK NAMESPACE completed.
+5 LIST "" ""
+* LIST (\Noselect) "." ""
+5 OK LIST completed.
+6 SELECT INBOX
+* FLAGS (\Draft \Answered \Flagged \Deleted \Seen \Recent)
+* OK [PERMANENTFLAGS (\* \Draft \Answered \Flagged \Deleted \Seen)] Limited
+* 5 EXISTS
+* 0 RECENT
+* OK [UIDVALIDITY 1529476067] Ok
+6 OK [READ-WRITE] SELECT completed.
+7 UID SEARCH UID 1:*
+* SEARCH 1 2 3 4 5
+7 OK SEARCH completed.
+8 NOOP
+8 OK NOOP completed.
+9 SELECT "INBOX.Sent"
+* FLAGS (\Draft \Answered \Flagged \Deleted \Seen \Recent)
+* OK [PERMANENTFLAGS (\* \Draft \Answered \Flagged \Deleted \Seen)] Limited
+* 2 EXISTS
+* 0 RECENT
+* OK [UIDVALIDITY 1232472941] Ok
+9 OK [READ-WRITE] SELECT completed.
+10 UID SEARCH UID 10002:*
+* SEARCH 10002
+10 OK SEARCH completed.
+11 NOOP
+11 OK NOOP completed.
+12 SELECT "INBOX.Drafts"
+* FLAGS (\Draft \Answered \Flagged \Deleted \Seen \Recent)
+* OK [PERMANENTFLAGS (\* \Draft \Answered \Flagged \Deleted \Seen)] Limited
+* 0 EXISTS
+* 0 RECENT
+* OK [UIDVALIDITY 1232472941] Ok
+12 OK [READ-WRITE] SELECT completed.
+13 UID SEARCH UID 1:*
+* SEARCH
+13 OK SEARCH completed.
+14 NOOP
+14 OK NOOP completed.
+15 SELECT "INBOX.Fax"
+* FLAGS (\Draft \Answered \Flagged \Deleted \Seen \Recent)
+* OK [PERMANENTFLAGS (\* \Draft \Answered \Flagged \Deleted \Seen)] Limited
+* 0 EXISTS
+* 0 RECENT
+* OK [UIDVALIDITY 1232472941] Ok
+15 OK [READ-WRITE] SELECT completed.
+16 UID SEARCH UID 1:*
+* SEARCH
+16 OK SEARCH completed.
+17 NOOP
+17 OK NOOP completed.
+18 LIST "" "*"
+* LIST (\HasNoChildren) "." "INBOX.Drafts"
+* LIST (\HasNoChildren) "." "INBOX.Fax"
+* LIST (\HasNoChildren) "." "INBOX.Spam"
+* LIST (\HasNoChildren) "." "INBOX.Sent"
+* LIST (\HasNoChildren) "." "INBOX.Trash"
+* LIST (\Marked \HasChildren) "." "INBOX"
+18 OK LIST completed.
+19 NOOP
+19 OK NOOP completed.
+20 SELECT INBOX
+* FLAGS (\Draft \Answered \Flagged \Deleted \Seen \Recent)
+* OK [PERMANENTFLAGS (\* \Draft \Answered \Flagged \Deleted \Seen)] Limited
+* 5 EXISTS
+* 0 RECENT
+* OK [UIDVALIDITY 1529476067] Ok
+20 OK [READ-WRITE] SELECT completed.
+21 UID SEARCH UID 1:*
+* SEARCH 1 2 3 4 5
+21 OK SEARCH completed.
+22 NOOP
+22 OK NOOP completed.
+23 UID FETCH 1:5 (UID FLAGS)
+* 1 FETCH (UID 1 FLAGS (\Seen))
+* 2 FETCH (UID 2 FLAGS (\Seen))
+* 3 FETCH (UID 3 FLAGS (\Seen))
+* 4 FETCH (UID 4 FLAGS (\Seen))
+* 5 FETCH (UID 5 FLAGS (\Seen))
+23 OK FETCH completed.
+23 Fetch 1 full
+

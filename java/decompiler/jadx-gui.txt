@@ -1,0 +1,5 @@
+反编译失败的代码：
+	使用jadx打开之前，用命令
+	jadx-gui  --show-bad-code  target.apk
+	这样打开，就可以看到具体的代码了。
+

@@ -1,0 +1,27 @@
+﻿vs2013 yasm mingw sdl
+
+downlaod:
+ https://www.libsdl.org/release/
+
+
+./configure --enable-static --prefix=./vs2013_build_debug --enable-debug --toolchain=msvc
+./configure --enable-static --prefix=./vs2013_build_debug --enable-debug --toolchain=msvc --disable-optimizations
+./configure --enable-static --prefix=./vs2013_build_debug --enable-debug --toolchain=msvc --disable-optimizations --enable-sdl
+
+
+
+
+https://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download
+http://yasm.tortall.net/Download.html
+https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/win32/
+http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.26-1_win32.zip
+http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.18/glib_2.18.4-1_win32.zip 主要用到里面的libglib-2.0-0.dll
+https://www.libsdl.org/release/SDL2-devel-2.0.8-mingw.tar.gz
+
+
+
+
+./configure --enable-static --disable-shared --enable-gpl --enable-version3 --enable-sdl --enable-debug=3 --disable-optimizations --disable-mmx --prefix=./mingw32-static-sdl
+
+
+./configure --enable-gpl --enable-version3 --enable-sdl2 --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass  --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib  --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libaom --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth --enable-libopenmpt

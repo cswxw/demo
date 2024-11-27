@@ -1,0 +1,71 @@
+struct engine_st
+	{
+	const char *id;   						//ENGINE_set_id
+	const char *name;  						//ENGINE_set_name
+	const RSA_METHOD *rsa_meth;
+	const DSA_METHOD *dsa_meth;
+	const DH_METHOD *dh_meth;
+	const ECDH_METHOD *ecdh_meth;
+	const ECDSA_METHOD *ecdsa_meth;  		//ENGINE_set_ECDSA
+				/*
+					struct ecdsa_method 
+						{
+						const char *name;
+						ECDSA_SIG *(*ecdsa_do_sign)(const unsigned char *dgst, int dgst_len, 
+								const BIGNUM *inv, const BIGNUM *rp, EC_KEY *eckey);
+						int (*ecdsa_sign_setup)(EC_KEY *eckey, BN_CTX *ctx, BIGNUM **kinv, 
+								BIGNUM **r);
+						int (*ecdsa_do_verify)(const unsigned char *dgst, int dgst_len, 
+								const ECDSA_SIG *sig, EC_KEY *eckey);
+					#if 0
+						int (*init)(EC_KEY *eckey);
+						int (*finish)(EC_KEY *eckey);
+					#endif
+						int flags;
+						char *app_data;
+						};
+				*/
+	const RAND_METHOD *rand_meth;
+	const STORE_METHOD *store_meth;
+	/* Cipher handling is via this callback */   
+	ENGINE_CIPHERS_PTR ciphers;                   ////返回对称算法集合或者某一个对称算法
+	/* Digest handling is via this callback */
+	ENGINE_DIGESTS_PTR digests;					//ENGINE_set_digests 摘要处理是通过此回调进行的
+
+
+	ENGINE_GEN_INT_FUNC_PTR	destroy;   			//ENGINE_set_destroy_function 销毁
+
+	ENGINE_GEN_INT_FUNC_PTR init;				//ENGINE_set_init_function  初始化
+	ENGINE_GEN_INT_FUNC_PTR finish;
+	ENGINE_CTRL_FUNC_PTR ctrl;                   //ENGINE_set_ctrl_function
+	ENGINE_LOAD_KEY_PTR load_privkey;
+	ENGINE_LOAD_KEY_PTR load_pubkey;
+
+	ENGINE_SSL_CLIENT_CERT_PTR load_ssl_client_cert;
+
+	const ENGINE_CMD_DEFN *cmd_defns;				//ENGINE_set_cmd_defns
+				/*
+					typedef struct ENGINE_CMD_DEFN_st
+						{
+						unsigned int cmd_num; // The command number 
+						const char *cmd_name; // The command name itself 
+						const char *cmd_desc; // A short description of the command 
+						unsigned int cmd_flags; // The input the command expects 
+						} ENGINE_CMD_DEFN;
+				*/
+			
+	int flags;
+	/* reference count on the structure itself */
+	int struct_ref;
+	/* reference count on usability of the engine type. NB: This
+	 * controls the loading and initialisation of any functionlity
+	 * required by this engine, whereas the previous count is
+	 * simply to cope with (de)allocation of this structure. Hence,
+	 * running_ref <= struct_ref at all times. */
+	int funct_ref;
+	/* A place to store per-ENGINE data */
+	CRYPTO_EX_DATA ex_data;
+	/* Used to maintain the linked-list of engines. */
+	struct engine_st *prev;
+	struct engine_st *next;
+	};

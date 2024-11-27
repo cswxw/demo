@@ -1,0 +1,80 @@
+static const DUI_MSGMAP_ENTRY* DuiFindMessageEntry(const DUI_MSGMAP_ENTRY* lpEntry,TNotifyUI& msg )
+{
+	CDuiString sMsgType = msg.sType;
+	CDuiString sCtrlName = msg.pSender->GetName();
+	const DUI_MSGMAP_ENTRY* pMsgTypeEntry = NULL;
+	while (lpEntry->nSig != DuiSig_end)
+	{
+		if(lpEntry->sMsgType==sMsgType)  //匹配类型
+		{
+			if(!lpEntry->sCtrlName.IsEmpty())
+			{
+				if(lpEntry->sCtrlName==sCtrlName)  //匹配名称，相同就返回
+				{
+					return lpEntry;
+				}
+			}
+			else
+			{
+				pMsgTypeEntry = lpEntry;
+			}
+		}
+		lpEntry++;
+	}
+	return pMsgTypeEntry;
+}
+
+/**************************************************************************************/
+//类消息宏定义
+	/*
+	#define DUI_DECLARE_MESSAGE_MAP()                                         
+		private:                                                                  
+			static const DUI_MSGMAP_ENTRY _messageEntries[];                      
+		protected:                                                                
+			static const DUI_MSGMAP messageMap;                                   
+			static const DUI_MSGMAP* PASCAL _GetBaseMessageMap();                 
+			virtual const DUI_MSGMAP* GetMessageMap() const;                      
+	*/
+	DUI_DECLARE_MESSAGE_MAP();
+
+/**************************************************************************************/
+
+//消息宏定义
+/*
+#define DUI_BEGIN_MESSAGE_MAP(theClass, baseClass)                        \
+const DUI_MSGMAP* PASCAL theClass::_GetBaseMessageMap()  { return &baseClass::messageMap; }                                \
+const DUI_MSGMAP* theClass::GetMessageMap() const        { return &theClass::messageMap; }                                 \
+UILIB_COMDAT const DUI_MSGMAP theClass::messageMap =                  \
+{ &theClass::_GetBaseMessageMap, &theClass::_messageEntries[0] }; \
+UILIB_COMDAT const DUI_MSGMAP_ENTRY theClass::_messageEntries[] =     \
+{
+*/
+DUI_BEGIN_MESSAGE_MAP(CDuiFrameWnd, WindowImplBase)
+/*
+//结构定义
+struct DUI_MSGMAP_ENTRY //定义一个结构体，来存放消息信息
+{
+CDuiString sMsgType;          // DUI消息类型
+CDuiString sCtrlName;         // 控件名称
+UINT       nSig;              // 标记函数指针类型
+DUI_PMSG   pfn;               // 指向函数的指针
+};
+*/
+/*
+#define DUI_ON_MSGTYPE(msgtype, memberFxn) 
+		{ msgtype, _T(""), DuiSig_vn, (DUI_PMSG)&memberFxn},   //DuiSig_vn,      // void (TNotifyUI)               
+*/
+DUI_ON_MSGTYPE(DUI_MSGTYPE_SELECTCHANGED, OnOptSelChanged)
+
+/*
+//声明结束
+#define DUI_END_MESSAGE_MAP()                                             \
+	{ _T(""), _T(""), DuiSig_end, (DUI_PMSG)0 }                           \
+};
+*/
+DUI_END_MESSAGE_MAP()
+
+/**************************************************************************************/
+
+
+

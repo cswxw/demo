@@ -1,0 +1,58 @@
+//自签名证书
+rsa = RSA_generate_key(bit, RSA_F4, NULL, NULL);
+bio = NewBio();
+i2d_RSAPrivateKey_bio(bio, rsa);
+BIO_seek(bio, 0);
+pkey = d2i_PrivateKey_bio(bio, NULL);  //获取私钥
+pkey = PEM_read_bio_PUBKEY(bio, NULL, (pem_password_cb *)PKeyPasswordCallbackFunction, &cb);//获取公钥
+pkey = d2i_PUBKEY_bio(bio, NULL);//获取公钥
+
+//设置时间
+	notBefore = SystemTime64();
+	notAfter = notBefore + (UINT64)days * (UINT64)3600 * (UINT64)24 * (UINT64)1000;
+
+// Creating a X509
+	x509 = X509_new();
+	if (x509 == NULL)
+	{
+		return NULL;
+	}
+
+	// Make it a v3 certificate
+	X509_set_version(x509, 2L);
+	
+// Set the Expiration
+	t1 = X509_get_notBefore(x509);
+	t2 = X509_get_notAfter(x509);
+
+//设置 issuer_name subject_name
+	X509_set_issuer_name(x509, issuer_name);
+	X509_set_subject_name(x509, subject_name);
+
+// Set a Serial Number
+	if (serial == NULL)
+	{
+		char zero = 0;
+		ASN1_INTEGER *s = x509->cert_info->serialNumber;
+		OPENSSL_free(s->data);
+		s->data = OPENSSL_malloc(sizeof(char));
+		Copy(s->data, &zero, sizeof(char));
+		s->length = sizeof(char);
+	}
+	else
+	{
+		ASN1_INTEGER *s = x509->cert_info->serialNumber;
+		OPENSSL_free(s->data);
+		s->data = OPENSSL_malloc(serial->size);
+		Copy(s->data, serial->data, serial->size);
+		s->length = serial->size;
+	}
+	
+// Set the public key
+	X509_set_pubkey(x509, pub->pkey);
+	
+// Signature
+// 2014.3.19 set the initial digest algorithm to SHA-256
+		X509_sign(x509, priv->pkey, EVP_sha256());
+		
+

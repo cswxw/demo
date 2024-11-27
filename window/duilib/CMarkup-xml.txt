@@ -1,0 +1,189 @@
+http://www.firstobject.com/dn_markup.htm
+https://blog.csdn.net/wangshubo1989/article/details/52921285
+
+
+ CMarkup之成员函数说明
+
+1、初始化
+
+Load 		导入一个XML文件到CMarkup的对象中，并对它进行解析。类似C#的Load。
+
+SetDoc 		从字符串中导入XML数据，并对它解析。类似C#的LoadXml。
+
+2、输出
+
+Save 		将XML数据写入文件中。类似C#的Save。
+
+GetDoc 		将整个XML数据文档作为字符串返回。
+
+3、改变当前位置
+
+FindElem 	定位到下一个元素，可能和一个标签名或路径匹配。
+
+FindChildElem 	定位到下一个子元素，匹配元素名或路径。
+
+FindPrevElem 	定位前一个元素，可能和一个标签名或路径匹配。
+
+FindPrevChildElem 定位前一个子元素，可能匹配标签名。
+
+FindNode  	定位下一个节点，可能和节点类型匹配。
+
+IntoElem  	进入当前主位置的下一级，当前的位置变为父位置。
+
+OutOfElem 	使当前父位置变成当前位置。
+
+ResetPos 	复位当前位置为文档起始位置。
+
+ResetMainPos 	将当前主位置复位为第一个兄弟位置之前。
+
+ResetChildPos 	复位当前子位置到第一个子位置之前。
+
+4、文档新增
+
+AddElem 	在当前主位置元素或最后兄弟位置之后增加一个元素。
+
+InsertElem 	在当前主位置元素或第一个兄弟位置之前插入一个元素。
+
+AddChildElem 	在当前子位置元素或最后一个子位置之后增加一个元素。
+
+InsertChileElem 在当前子位置元素或低一个子位置之前插入一个元素。
+
+AddSubDoc 	在当前主位置元素或最后一个兄弟位置之后增加一个子文档。
+
+InsertSubDoc 	在当前主位置元素或第一个兄弟位置之前插入一个子文档。
+
+AddChildSubDoc 	在当前子位置元素或最后一个子位置之后增加子文档。
+
+InsertChildSubDoc 在当前子位置元素或第一个子位置之前插入一个子文档。
+
+AddNode 	在当前节点之后或父元素内容末尾增加一个节点。
+
+InsertNode 	在当前节点之前或父元素内容开头插入一个节点。
+
+5、文档中删除
+
+RemoveElem 	删除当前包括子元素的主位置元素
+
+RemoveChildElem 删除包括当前子元素及其子元素
+
+RemoveNode 	删除当前节点
+
+RemoveAttrib 	删除当前位置元素具体的属性
+
+RemoveChildAttrib 删除当前子位置元素的某个具体属性
+
+6、得到值
+
+GetData 	得到当前主位置元素或节点的字符串值
+
+GetChildData 	得到当前子位置元素的字符串值
+
+GetElemContent 	得到当前主位置元素包括其子元素的标记内容字符串值
+
+GetSubDoc 	得到当前主位置元素包括其子元素的文档片断标记字符串值
+
+GetChildSubDoc 	得到当前子位置元素包括其子元素的文档片断标记字符串值
+
+GetAttrib 	得到主位置元素（或正在进行的指令的）某一具体属性字符串值
+
+GetChildAttrib 	得到子位置某一特定属性的字符串值
+
+GetTagName 	得到主位置元素（或正在进行的指令的）标签名称
+
+GetChildTagName 得到子位置元素的标签名称
+
+FindGetData 	定位到匹配某一具体路径的下一个元素并返回字符串值
+
+7、设置值
+
+SetData 	设置当前主位置元素或节点的值
+
+SetChildData 	设置当前子位置元素的值
+
+SetElemContent 	设置当前主位置元素的标记内容
+
+SetAttrib 	设置当前主位置元素（或正在进行的指令的）某一具体属性的值
+
+SetChildAttrib 	设置当前子位置元素某一具体属性的值
+
+FindSetData 	定位匹配某一具体路径的下一个元素并设置其值
+
+8、获取其他信息
+
+GetAttribName 	当过当前位置元素属性的具体索引得到属性名称
+
+GetNodeType 	得到当前节点的节点类型
+
+GetElemLevel 	得到当前主位置的级数
+
+GetElemFlags 	得到当前主位置元素的标志
+
+SetElemFlags 	设置当前主位置元素的标志
+
+GetOffsets 	获得在当前主位置偏移的文档文本
+
+GetAttribOffsets 获得在当前主位置特定属性便宜的文档文本
+
+9、保存位置信息
+
+SavePos 	在hash map中使用可选字符串名称保存当前位置
+
+RestorePos 	定位到通过SavePos保存的位置
+
+SetMapSize 	设置SavePos和RestorePos使用的hash map大小
+
+GetElemIndex 	得到当前主位置元素整形索引值
+
+GotoElemIndex 	设置当前主位置元素为给定的整形索引值
+
+GetChildElemIndex  得到当前子位置元素的整形索引值
+
+GotoChildElemIndex 设置当前子位置元素为给定的整形索引值
+
+GetParentElemIndex 获得当前父位置元素的整形索引值
+
+GotoParentElemIndex 设置当前父位置元素为给定的整形索引值
+
+GetElemPath 	  获得表示主位置元素绝对路径的字符串
+
+GetChildElemPath   获得表示子位置元素的绝对路径的字符串
+
+GetParentElemPath  获得表示父位置元素的绝对路径的字符串
+
+10、文档状态
+
+IsWellFormed 	判定文档是否有单一根元素和恰当地包含元素
+
+GetError 	从最后的解析中返回错误（信息）字符串
+
+GetDocFlags 	返回文档标志
+
+SetDocFlags 	设置文档标志
+
+GetDocElemCount 返回文档中元素的个数
+
+11、静态的实用函数
+
+ReadTextFile 	读一个文本文件转成字符串
+
+WirteTextFile 	写字符串到文本文件中
+
+GetDeclareEncoding 从XML声明中得到编码的名字
+
+EscapeText 	返回标记中某一字符的编码
+
+UnescapeText 	返回字符串值得某一特定字符解码
+
+UTF8ToA 	将UTF-8字符转成非Unicode（如ANSI）字符
+
+AToUTF8 	将非Unicode（如ANSI）字符转成UTF-8字符
+
+UTF16T08 	将UTF-16字符转成UTF-8
+
+UTF8To16 	将UTF-8字符转成UTF-16
+
+EncodeBase64 	将二进制数据译成Base64字符串
+
+DecodeBase64 	将Base64字符译成二进制数据CMarkup之成员函数说明
+
+
